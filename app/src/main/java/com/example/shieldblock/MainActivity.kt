@@ -8,34 +8,35 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.shieldblock.data.WhitelistManager
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.textfield.TextInputEditText
-import kotlinx.android.synthetic.main.activity_main.*
+import com.example.shieldblock.databinding.ActivityMainBinding
+import com.example.shieldblock.vpn.MyVpnService
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
     private val whitelistManager by lazy { WhitelistManager(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // VPN Control Buttons
-        startVpnButton.setOnClickListener { startVpn() }
-        stopVpnButton.setOnClickListener { stopVpn() }
+        binding.startVpnButton.setOnClickListener { startVpn() }
+        binding.stopVpnButton.setOnClickListener { stopVpn() }
 
         // Whitelist Logic
-        addWhitelistButton.setOnClickListener {
-            val domain = whitelistEditText.text.toString()
+        binding.addWhitelistButton.setOnClickListener {
+            val domain = binding.whitelistEditText.text.toString()
             if (domain.isNotBlank()) {
                 whitelistManager.addToWhitelist(domain)
                 Toast.makeText(this, "$domain added to whitelist", Toast.LENGTH_SHORT).show()
-                whitelistEditText.text?.clear()
+                binding.whitelistEditText.text?.clear()
             }
         }
 
         // Settings Button
-        settingsButton.setOnClickListener {
+        binding.settingsButton.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
@@ -54,7 +55,7 @@ class MainActivity : AppCompatActivity() {
             startService(Intent(this, MyVpnService::class.java).apply {
                 putExtra("action", "start")
             })
-            statusText.text = "VPN Status: Connected"
+            binding.statusText.text = "VPN Status: Connected"
         }
     }
 
@@ -62,6 +63,6 @@ class MainActivity : AppCompatActivity() {
         startService(Intent(this, MyVpnService::class.java).apply {
             putExtra("action", "stop")
         })
-        statusText.text = "VPN Status: Disconnected"
+        binding.statusText.text = "VPN Status: Disconnected"
     }
 }
