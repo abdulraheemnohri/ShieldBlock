@@ -15,7 +15,7 @@ class BootCompleteReceiver : BroadcastReceiver() {
                 val vpnIntent = Intent(context, MyVpnService::class.java).apply {
                     putExtra("action", "start")
                 }
-                context.startForegroundService(vpnIntent)
+                androidx.core.content.ContextCompat.startForegroundService(context, vpnIntent)
             }
         }
     }
