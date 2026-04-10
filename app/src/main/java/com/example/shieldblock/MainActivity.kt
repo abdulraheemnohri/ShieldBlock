@@ -3,11 +3,14 @@ package com.example.shieldblock
 import android.content.Intent
 import android.net.VpnService
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.shieldblock.data.StatsManager
 import com.example.shieldblock.data.WhitelistManager
 import com.example.shieldblock.databinding.ActivityMainBinding
 import com.example.shieldblock.vpn.MyVpnService
@@ -16,6 +19,14 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val whitelistManager by lazy { WhitelistManager(this) }
+    private val statsManager by lazy { StatsManager(this) }
+    private val handler = Handler(Looper.getMainLooper())
+    private val updateStatsRunnable = object : Runnable {
+        override fun run() {
+            updateStats()
+            handler.postDelayed(this, 5000) // Update every 5 seconds
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +35,7 @@ class MainActivity : AppCompatActivity() {
 
         // Initial UI State
         updateVpnUi(false)
+        updateStats()
 
         // VPN Control Buttons
         binding.startVpnButton.setOnClickListener { startVpn() }
@@ -49,6 +61,21 @@ class MainActivity : AppCompatActivity() {
             24, TimeUnit.HOURS
         ).build()
         WorkManager.getInstance(this).enqueue(blacklistWork)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        handler.post(updateStatsRunnable)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        handler.removeCallbacks(updateStatsRunnable)
+    }
+
+    private fun updateStats() {
+        binding.blockedAdsCountText.text = statsManager.getBlockedAdsCount().toString()
+        binding.blockedWebsitesCountText.text = statsManager.getBlockedWebsitesCount().toString()
     }
 
     private fun startVpn() {

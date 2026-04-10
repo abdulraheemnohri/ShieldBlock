@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/surface"
+        app:title="Activity Logs"
+        app:titleTextColor="@color/on_surface" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/refreshButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Refresh"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/clearLogsButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Clear"
+            style="@style/Widget.Material3.Button.TonalButton" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/logListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@color/outline"
+        android:dividerHeight="0.5dp" />
+
+</LinearLayout>
