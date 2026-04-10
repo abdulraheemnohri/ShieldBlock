@@ -3,6 +3,7 @@ package com.example.shieldblock
 import android.content.Intent
 import android.net.VpnService
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.work.PeriodicWorkRequestBuilder
@@ -20,6 +21,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Initial UI State
+        updateVpnUi(false)
 
         // VPN Control Buttons
         binding.startVpnButton.setOnClickListener { startVpn() }
@@ -55,7 +59,7 @@ class MainActivity : AppCompatActivity() {
             startService(Intent(this, MyVpnService::class.java).apply {
                 putExtra("action", "start")
             })
-            binding.statusText.text = "VPN Status: Connected"
+            updateVpnUi(true)
         }
     }
 
@@ -63,6 +67,29 @@ class MainActivity : AppCompatActivity() {
         startService(Intent(this, MyVpnService::class.java).apply {
             putExtra("action", "stop")
         })
-        binding.statusText.text = "VPN Status: Disconnected"
+        updateVpnUi(false)
+    }
+
+    private fun updateVpnUi(isConnected: Boolean) {
+        if (isConnected) {
+            binding.statusText.text = getString(R.string.vpn_status_connected)
+            binding.statusText.setTextColor(getColor(R.color.primary))
+            binding.statusIcon.setColorFilter(getColor(R.color.primary))
+            binding.startVpnButton.visibility = View.GONE
+            binding.stopVpnButton.visibility = View.VISIBLE
+        } else {
+            binding.statusText.text = getString(R.string.vpn_status_disconnected)
+            binding.statusText.setTextColor(getColor(R.color.tertiary))
+            binding.statusIcon.setColorFilter(getColor(R.color.tertiary))
+            binding.startVpnButton.visibility = View.VISIBLE
+            binding.stopVpnButton.visibility = View.GONE
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK) {
+            startVpn()
+        }
     }
 }
