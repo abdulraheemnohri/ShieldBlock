@@ -1,6 +1,7 @@
 package com.example.shieldblock
 
 import android.content.BroadcastReceiver
+import com.example.shieldblock.vpn.MyVpnService
 import android.content.Context
 import android.content.Intent
 import androidx.preference.PreferenceManager

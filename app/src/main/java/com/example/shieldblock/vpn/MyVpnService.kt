@@ -44,7 +44,7 @@ class MyVpnService : VpnService() {
 
     private fun startVpn() {
         setupVpn()
-        dnsProxy = DnsProxy(vpnInterface!!.fileDescriptor)
+        dnsProxy = DnsProxy(vpnInterface!!.fileDescriptor, this)
         dnsProxy.updateBlacklist(blacklistManager.loadLocalBlacklist())
         dnsProxy.updateWhitelist(whitelistManager.getWhitelist())
         dnsProxyJob = CoroutineScope(Dispatchers.IO).launch {
