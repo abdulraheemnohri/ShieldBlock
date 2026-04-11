@@ -15,8 +15,8 @@ import com.example.shieldblock.data.StatsManager
 import com.example.shieldblock.data.WhitelistManager
 import com.example.shieldblock.data.BlacklistManager
 import com.example.shieldblock.data.FilterManager
+import com.example.shieldblock.data.DnsProfile
 import com.example.shieldblock.databinding.SettingsActivityBinding
-import com.example.shieldblock.databinding.DialogAddSourceBinding
 import com.example.shieldblock.analytics.EventLogger
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
@@ -37,30 +37,22 @@ class SettingsActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-        // Automation & Theme
-        binding.autoStartSwitch.isChecked = prefs.getBoolean("auto_start", false)
-        binding.notificationSwitch.isChecked = prefs.getBoolean("notifications", true)
-
-        binding.autoStartSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("auto_start", isChecked).apply()
-        }
-        binding.notificationSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("notifications", isChecked).apply()
-        }
-
-        binding.themeSelectionLayout.setOnClickListener { showThemeDialog() }
+        // Theme
         updateThemeText()
+        binding.themeSettingsLayout.setOnClickListener { showThemeDialog() }
 
-        binding.performanceProfileLayout.setOnClickListener { showPerformanceProfileDialog() }
+        // Profile
         updatePerformanceProfileText()
+        binding.performanceProfileLayout.setOnClickListener { showPerformanceProfileDialog() }
 
+        // Schedule
         binding.scheduledProtectionLayout.setOnClickListener { showScheduleDialog() }
         updateScheduleText()
 
         // Filtering
-        binding.manageBlacklistLayout.setOnClickListener { showBlacklistDialog() }
+        binding.manageBlacklistLayout.setOnClickListener {
+            startActivity(Intent(this, SourceManagementActivity::class.java))
+        }
         binding.ruleEditorLayout.setOnClickListener {
             startActivity(Intent(this, RuleEditorActivity::class.java))
         }
@@ -69,6 +61,20 @@ class SettingsActivity : AppCompatActivity() {
         }
         binding.updateFrequencyLayout.setOnClickListener { showUpdateFrequencyDialog() }
         updateFrequencyText()
+
+        // Manual Editors
+        binding.manualWhitelistEditorLayout.setOnClickListener {
+            val intent = Intent(this, TextEditorActivity::class.java)
+            intent.putExtra("file_path", whitelistManager.getManualFilePath())
+            intent.putExtra("file_name", "whitelist_manual.txt")
+            startActivity(intent)
+        }
+        binding.manualRulesEditorLayout.setOnClickListener {
+            val intent = Intent(this, TextEditorActivity::class.java)
+            intent.putExtra("file_path", blacklistManager.getCustomFilePath())
+            intent.putExtra("file_name", "blacklist_custom.txt")
+            startActivity(intent)
+        }
 
         // DNS & Apps
         updateDnsText()
@@ -86,18 +92,16 @@ class SettingsActivity : AppCompatActivity() {
         // Maintenance
         updateLastUpdateText()
         binding.updateBlocklistsButton.setOnClickListener {
-            val updateWork = OneTimeWorkRequestBuilder<BlacklistWorker>().build()
-            WorkManager.getInstance(this).enqueue(updateWork)
-            Toast.makeText(this, "Update started in background", Toast.LENGTH_SHORT).show()
+            scheduleWork(PreferenceManager.getDefaultSharedPreferences(this).getInt("update_frequency", 24))
+            Toast.makeText(this, "Update scheduled", Toast.LENGTH_SHORT).show()
         }
         binding.backupConfigLayout.setOnClickListener { showBackupRestoreDialog() }
-
         binding.resetAllButton.setOnClickListener {
             AlertDialog.Builder(this)
-                .setTitle("Reset Everything?")
-                .setMessage("This will clear all stats, whitelist, and custom sources.")
-                .setPositiveButton("Reset") { _, _ ->
-                    prefs.edit().clear().apply()
+                .setTitle("Factory Reset?")
+                .setMessage("This will clear ALL settings, rules, and statistics. This cannot be undone.")
+                .setPositiveButton("Reset Everything") { _, _ ->
+                    PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply()
                     statsManager.resetStats()
                     Toast.makeText(this, "App reset. Please restart.", Toast.LENGTH_LONG).show()
                     finishAffinity()
@@ -155,7 +159,7 @@ class SettingsActivity : AppCompatActivity() {
         val values = arrayOf("performance", "balanced", "battery_saver")
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val current = prefs.getString("perf_profile", "balanced")
-        val checked = values.indexOf(current)
+        val checked = values.indexOf(current ?: "balanced")
 
         AlertDialog.Builder(this)
             .setTitle("Performance Profile")
@@ -269,8 +273,8 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun showDnsProfileDialog() {
-        val profiles = filterManager.dnsProfiles
-        val names = (profiles.map { "${it.name} (${it.primaryDns})" } + "Manual Input").toTypedArray()
+        val profiles: List<DnsProfile> = filterManager.dnsProfiles
+        val names: Array<String> = (profiles.map { "${it.name} (${it.primaryDns})" } + "Manual Input").toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle("Select DNS Profile")
@@ -317,7 +321,7 @@ class SettingsActivity : AppCompatActivity() {
         val themeValues = arrayOf("system", "light", "dark")
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val currentTheme = prefs.getString("app_theme", "system")
-        val checkedItem = themeValues.indexOf(currentTheme)
+        val checkedItem = themeValues.indexOf(currentTheme ?: "system")
 
         AlertDialog.Builder(this)
             .setTitle("Choose Theme")
@@ -337,37 +341,5 @@ class SettingsActivity : AppCompatActivity() {
             "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
-    }
-
-    private fun showBlacklistDialog() {
-        val allSources = filterManager.getAllSources()
-        val names = allSources.map { "${it.name} (${it.category})" }.toTypedArray()
-        val enabledIds = filterManager.getEnabledFilterIds()
-        val checkedItems = allSources.map { enabledIds.contains(it.id) }.toBooleanArray()
-
-        AlertDialog.Builder(this)
-            .setTitle("Blocklist Categories")
-            .setMultiChoiceItems(names, checkedItems) { _, which, isChecked ->
-                filterManager.setFilterEnabled(allSources[which].id, isChecked)
-            }
-            .setPositiveButton("Add Custom") { _, _ -> showAddSourceDialog() }
-            .setNeutralButton("Done", null)
-            .show()
-    }
-
-    private fun showAddSourceDialog() {
-        val dialogBinding = DialogAddSourceBinding.inflate(LayoutInflater.from(this))
-        AlertDialog.Builder(this)
-            .setView(dialogBinding.root)
-            .setPositiveButton("Add") { _, _ ->
-                val name = dialogBinding.sourceNameEditText.text.toString()
-                val url = dialogBinding.sourceUrlEditText.text.toString()
-                if (name.isNotBlank() && url.isNotBlank()) {
-                    filterManager.addCustomSource(name, url)
-                    Toast.makeText(this, "Source added", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
     }
 }

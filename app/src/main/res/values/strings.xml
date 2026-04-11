@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ShieldBlock</string>
+    <string name="app_name">ShieldBlock Ultra</string>
     <string name="no_logs_found">No logs found.</string>
     <string name="error_reading_logs">Error reading logs.</string>
     <string name="vpn_status_connected">Protected</string>
@@ -22,4 +22,17 @@
     <string name="scheduled_protection">Scheduled Protection</string>
     <string name="quick_settings_label">ShieldBlock</string>
     <string name="app_exclusion">Apps Management</string>
+
+    <!-- Pro Features Strings -->
+    <string name="privacy_score_label">Privacy Score</string>
+    <string name="ads_blocked_label">Ads Blocked</string>
+    <string name="data_saved_label">Data Saved</string>
+    <string name="live_feed_label">LIVE FEED</string>
+    <string name="top_blocked_label">Top Blocked Domains</string>
+    <string name="network_rules_label">Network Rules</string>
+    <string name="blocklist_sources_label">Blocklist Sources</string>
+    <string name="update_frequency_label">Update Frequency</string>
+    <string name="system_health_label">System Health</string>
+    <string name="check_updates_label">Check for Updates</string>
+    <string name="about_pro_edition">About ShieldBlock Pro</string>
 </resources>

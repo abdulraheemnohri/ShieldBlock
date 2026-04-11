@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/surface"
+        app:title="File Editor"
+        app:titleTextColor="@color/on_surface" />
+
+    <TextView
+        android:id="@+id/fileNameText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:textColor="@color/primary"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/fileEditText"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="top"
+        android:padding="16dp"
+        android:background="@color/surface_container_low"
+        android:textColor="@color/on_surface"
+        android:textSize="14sp"
+        android:fontFamily="monospace"
+        android:inputType="textMultiLine"
+        android:hint="One entry per line..." />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/saveButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Save Changes" />
+
+</LinearLayout>

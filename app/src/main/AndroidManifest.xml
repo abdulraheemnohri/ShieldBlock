@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -47,10 +50,11 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".ShieldBlockWidget" android:exported="false">
+        <receiver android:name=".ShieldBlockWidget" android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="TOGGLE_VPN" />
+                <action android:name="com.example.shieldblock.TOGGLE_VPN" />
+                <action android:name="com.example.shieldblock.VPN_STATUS_CHANGED" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
@@ -75,6 +79,8 @@
         <activity android:name=".NetworkRulesActivity" android:label="Network Rules" />
         <activity android:name=".AnalyticsActivity" android:label="Visual Analytics" />
         <activity android:name=".AboutActivity" android:label="About &amp; Health" />
+        <activity android:name=".SourceManagementActivity" android:label="Blocklist Sources" />
+        <activity android:name=".TextEditorActivity" android:label="Edit Rules" />
 
     </application>
 

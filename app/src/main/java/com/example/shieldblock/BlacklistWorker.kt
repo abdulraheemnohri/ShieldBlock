@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -23,35 +24,41 @@ class BlacklistWorker(appContext: Context, workerParams: WorkerParameters) :
         val client = OkHttpClient()
 
         val enabledIds = filterManager.getEnabledFilterIds()
-        val sourcesToFetch = filterManager.getAllSources().filter { enabledIds.contains(it.id) }
+        val allSources = filterManager.getAllSources()
+        val sourcesToProcess = allSources.filter { enabledIds.contains(it.id) }
 
         val allHosts = mutableSetOf<String>()
 
-        for (source in sourcesToFetch) {
+        for (source in sourcesToProcess) {
             try {
-                val request = Request.Builder().url(source.url).build()
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    val hosts = response.body?.string()?.lines()
-                        ?.filter { it.startsWith("0.0.0.0 ") || it.startsWith("127.0.0.1 ") }
-                        ?.map { line ->
-                            line.replace("0.0.0.0 ", "")
-                                .replace("127.0.0.1 ", "")
-                                .trim()
-                        }
-                        ?.filter { it.isNotEmpty() && it != "localhost" }
-                        ?: emptyList()
-                    allHosts.addAll(hosts)
+                val hosts = if (source.type == "LOCAL") {
+                    File(source.url).readLines()
+                } else {
+                    val request = Request.Builder().url(source.url).build()
+                    val response = client.newCall(request).execute()
+                    if (response.isSuccessful) {
+                        response.body?.string()?.lines() ?: emptyList()
+                    } else emptyList()
                 }
+
+                val parsed = hosts.filter { it.startsWith("0.0.0.0 ") || it.startsWith("127.0.0.1 ") }
+                    .map { line ->
+                        line.replace("0.0.0.0 ", "")
+                            .replace("127.0.0.1 ", "")
+                            .trim()
+                    }
+                    .filter { it.isNotEmpty() && it != "localhost" }
+
+                filterManager.updateSourceCount(source.id, parsed.size)
+                allHosts.addAll(parsed)
             } catch (e: Exception) {
-                Log.e("BlacklistWorker", "Failed to fetch ${source.name}: ${e.message}")
+                Log.e("BlacklistWorker", "Failed to process ${source.name}: ${e.message}")
             }
         }
 
         if (allHosts.isNotEmpty()) {
             blacklistManager.updateBlacklist(allHosts.toList())
 
-            // Save last update timestamp
             val sdf = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
             val timestamp = sdf.format(Date())
             PreferenceManager.getDefaultSharedPreferences(applicationContext)
