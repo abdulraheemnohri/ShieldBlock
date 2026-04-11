@@ -81,6 +81,8 @@
         <activity android:name=".AboutActivity" android:label="About &amp; Health" />
         <activity android:name=".SourceManagementActivity" android:label="Blocklist Sources" />
         <activity android:name=".TextEditorActivity" android:label="Edit Rules" />
+        <activity android:name=".SecurityAuditActivity" android:label="Security Audit" />
+        <activity android:name=".NetworkSnifferActivity" android:label="Network Sniffer" />
 
     </application>
 

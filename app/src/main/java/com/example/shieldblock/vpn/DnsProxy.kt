@@ -1,12 +1,12 @@
 package com.example.shieldblock.vpn
 
-import android.net.VpnService
-import androidx.preference.PreferenceManager
+import android.content.Intent
+import android.os.ParcelFileDescriptor
 import android.util.Log
-import com.example.shieldblock.data.StatsManager
-import com.example.shieldblock.data.FilterManager
+import androidx.preference.PreferenceManager
 import com.example.shieldblock.analytics.EventLogger
-import java.io.FileDescriptor
+import com.example.shieldblock.data.FilterManager
+import com.example.shieldblock.data.StatsManager
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.net.DatagramPacket
@@ -15,10 +15,7 @@ import java.net.InetAddress
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class DnsProxy(
-    private val vpnFd: FileDescriptor,
-    private val service: VpnService
-) : Runnable {
+class DnsProxy(private val vpnFd: ParcelFileDescriptor, private val service: MyVpnService) : Runnable {
     private val blacklist = mutableSetOf<String>()
     private val whitelist = mutableSetOf<String>()
     private val customRules = mutableSetOf<String>()
@@ -27,8 +24,18 @@ class DnsProxy(
     private val eventLogger = EventLogger(service)
     private var customDnsServer: String = "8.8.8.8"
 
+    private var strictMode = false
+    private var safeSearch = false
+    private var smartFiltering = false
+    private var dataSaver = false
+
     private var totalBytesRead = 0L
     private var totalBytesWritten = 0L
+
+    companion object {
+        // SafeSearch VIPs (Google)
+        private val GOOGLE_SAFE_IPS = listOf("216.239.38.120")
+    }
 
     fun getTrafficStats(): Pair<Long, Long> = totalBytesRead to totalBytesWritten
 
@@ -58,14 +65,19 @@ class DnsProxy(
         try {
             val prefs = PreferenceManager.getDefaultSharedPreferences(service)
             customDnsServer = prefs.getString("custom_dns", "8.8.8.8") ?: "8.8.8.8"
+            strictMode = prefs.getBoolean("strict_mode", false)
+            safeSearch = prefs.getBoolean("safe_search", false)
+            smartFiltering = prefs.getBoolean("smart_filtering", false)
+            dataSaver = prefs.getBoolean("data_saver", false)
+
             updateCustomRules(filterManager.getCustomRules())
 
             socket = DatagramSocket()
             service.protect(socket)
             socket.soTimeout = 5000
 
-            val inputStream = FileInputStream(vpnFd)
-            val outputStream = FileOutputStream(vpnFd)
+            val inputStream = FileInputStream(vpnFd.fileDescriptor)
+            val outputStream = FileOutputStream(vpnFd.fileDescriptor)
             val buffer = ByteBuffer.allocate(32768)
 
             while (!Thread.interrupted()) {
@@ -118,20 +130,60 @@ class DnsProxy(
 
         if (isWhitelisted(domain)) {
             statsManager.incrementSafeQueries()
+            service.sendBroadcast(Intent("com.example.shieldblock.PACKET_EVENT").apply { putExtra("domain", domain); putExtra("action", "Allowed (White)") })
             forwardDns(dnsData, socket, outputStream, sourceIP, sourcePort, destIP)
             return
         }
 
-        if (isBlacklisted(domain) || matchesCustomRules(domain)) {
-            statsManager.incrementBlockedAds()
-            statsManager.logBlockedDomain(domain)
-            eventLogger.logEvent("Blocked: $domain")
-            val nxResponse = createNxDomainResponse(dnsData)
-            sendResponse(nxResponse, outputStream, destIP, 53, sourceIP, sourcePort)
+        if (strictMode) {
+            blockDomain(domain, dnsData, outputStream, destIP, sourceIP, sourcePort)
+            return
+        }
+
+        if (safeSearch && isSearchDomain(domain)) {
+            eventLogger.logEvent("SafeSearch enforcing for: $domain")
+            val safeResponse = createARecordResponse(dnsData, GOOGLE_SAFE_IPS.first())
+            sendResponse(safeResponse, outputStream, destIP, 53, sourceIP, sourcePort)
+            return
+        }
+
+        if (isBlocked(domain)) {
+            blockDomain(domain, dnsData, outputStream, destIP, sourceIP, sourcePort)
         } else {
             statsManager.incrementSafeQueries()
+            service.sendBroadcast(Intent("com.example.shieldblock.PACKET_EVENT").apply { putExtra("domain", domain); putExtra("action", "Allowed") })
             forwardDns(dnsData, socket, outputStream, sourceIP, sourcePort, destIP)
         }
+    }
+
+    private fun isBlocked(domain: String): Boolean {
+        if (isBlacklisted(domain)) return true
+        if (matchesCustomRules(domain)) return true
+
+        if (smartFiltering) {
+            val suspicious = listOf("tracker", "telemetry", "analytics", "metrics", "log-", "stats", "ads.")
+            if (suspicious.any { domain.contains(it, ignoreCase = true) }) return true
+        }
+
+        if (dataSaver) {
+            val heavy = listOf("tiktok.com", "instagram.com", "fbcdn.net", "googlevideo.com")
+            if (heavy.any { domain.contains(it, ignoreCase = true) }) return true
+        }
+
+        return false
+    }
+
+    private fun blockDomain(domain: String, dnsData: ByteArray, outputStream: FileOutputStream, destIP: ByteArray, sourceIP: ByteArray, sourcePort: Int) {
+        statsManager.incrementBlockedAds()
+        statsManager.logBlockedDomain(domain)
+        eventLogger.logEvent("Blocked: $domain")
+        service.sendBroadcast(Intent("com.example.shieldblock.PACKET_EVENT").apply { putExtra("domain", domain); putExtra("action", "Blocked") })
+        val nxResponse = createNxDomainResponse(dnsData)
+        sendResponse(nxResponse, outputStream, destIP, 53, sourceIP, sourcePort)
+    }
+
+    private fun isSearchDomain(domain: String): Boolean {
+        return domain.contains("google.") || domain.contains("bing.com") || domain.contains("youtube.com")
     }
 
     private fun forwardDns(
@@ -245,5 +297,21 @@ class DnsProxy(
         response[2] = (response[2].toInt() or 0x81).toByte()
         response[3] = (response[3].toInt() or 0x83).toByte()
         return response
+    }
+
+    private fun createARecordResponse(query: ByteArray, ip: String): ByteArray {
+        val response = query.copyOf().toMutableList()
+        if (response.size < 12) return query
+        response[2] = 0x81.toByte()
+        response[3] = 0x80.toByte()
+        response[7] = 0x01.toByte()
+        response.add(0xc0.toByte()); response.add(0x0c.toByte())
+        response.add(0x00.toByte()); response.add(0x01.toByte())
+        response.add(0x00.toByte()); response.add(0x01.toByte())
+        response.add(0x00.toByte()); response.add(0x00.toByte())
+        response.add(0x00.toByte()); response.add(0x3c.toByte())
+        response.add(0x00.toByte()); response.add(0x04.toByte())
+        ip.split(".").forEach { response.add(it.toInt().toByte()) }
+        return response.toByteArray()
     }
 }

@@ -1,8 +1,10 @@
 package com.example.shieldblock
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.EditText
@@ -37,6 +39,7 @@ class RuleEditorActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
+        setupBottomNavigation()
         binding.ruleRecyclerView.layoutManager = LinearLayoutManager(this)
 
         lifecycleScope.launch {
@@ -63,7 +66,24 @@ class RuleEditorActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-        binding.addCustomRuleBtn.setOnClickListener { showAddCustomRuleDialog() }
+        binding.addCustomRuleBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            showAddCustomRuleDialog()
+        }
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.nav_settings
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            when (item.itemId) {
+                R.id.nav_home -> { startActivity(Intent(this, MainActivity::class.java)); finish(); true }
+                R.id.nav_analytics -> { startActivity(Intent(this, AnalyticsActivity::class.java)); finish(); true }
+                R.id.nav_apps -> { startActivity(Intent(this, AppExclusionActivity::class.java)); finish(); true }
+                R.id.nav_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); finish(); true }
+                else -> false
+            }
+        }
     }
 
     private fun filterDomains(query: String) {

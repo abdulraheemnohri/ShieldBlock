@@ -7,7 +7,7 @@ import org.json.JSONObject
 import java.util.*
 
 class StatsManager(private val context: Context) {
-    private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    private val prefs by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
     private val blockedAdsKey = "blocked_ads_count"
     private val safeQueriesKey = "safe_queries_count"
     private val topBlockedKey = "top_blocked_domains"
@@ -20,28 +20,23 @@ class StatsManager(private val context: Context) {
     fun getTotalQueries(): Int = getBlockedAdsCount() + getSafeQueriesCount()
 
     fun incrementBlockedAds() {
-        val current = getBlockedAdsCount()
-        prefs.edit().putInt(blockedAdsKey, current + 1).apply()
+        prefs.edit().putInt(blockedAdsKey, getBlockedAdsCount() + 1).apply()
         logHourlyBlock()
     }
 
     fun incrementSafeQueries() {
-        val current = getSafeQueriesCount()
-        prefs.edit().putInt(safeQueriesKey, current + 1).apply()
+        prefs.edit().putInt(safeQueriesKey, getSafeQueriesCount() + 1).apply()
     }
 
     private fun logHourlyBlock() {
-        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        val json = prefs.getString(hourlyStatsKey, "{}") ?: "{}"
-        val obj = JSONObject(json)
-        val count = obj.optInt(hour.toString(), 0)
-        obj.put(hour.toString(), count + 1)
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY).toString()
+        val obj = try { JSONObject(prefs.getString(hourlyStatsKey, "{}") ?: "{}") } catch(e: Exception) { JSONObject() }
+        obj.put(hour, obj.optInt(hour, 0) + 1)
         prefs.edit().putString(hourlyStatsKey, obj.toString()).apply()
     }
 
     fun getHourlyStats(): Map<Int, Int> {
-        val json = prefs.getString(hourlyStatsKey, "{}") ?: "{}"
-        val obj = JSONObject(json)
+        val obj = try { JSONObject(prefs.getString(hourlyStatsKey, "{}") ?: "{}") } catch(e: Exception) { JSONObject() }
         val map = mutableMapOf<Int, Int>()
         for (i in 0..23) {
             map[i] = obj.optInt(i.toString(), 0)
@@ -50,16 +45,13 @@ class StatsManager(private val context: Context) {
     }
 
     fun logBlockedDomain(domain: String) {
-        val json = prefs.getString(topBlockedKey, "{}") ?: "{}"
-        val obj = JSONObject(json)
-        val count = obj.optInt(domain, 0)
-        obj.put(domain, count + 1)
+        val obj = try { JSONObject(prefs.getString(topBlockedKey, "{}") ?: "{}") } catch(e: Exception) { JSONObject() }
+        obj.put(domain, obj.optInt(domain, 0) + 1)
 
-        val feedJson = prefs.getString(recentBlocksKey, "[]") ?: "[]"
-        val feedArray = JSONArray(feedJson)
+        val feedArray = try { JSONArray(prefs.getString(recentBlocksKey, "[]") ?: "[]") } catch(e: Exception) { JSONArray() }
         val newFeed = JSONArray()
         newFeed.put(domain)
-        for (i in 0 until minOf(feedArray.length(), 4)) {
+        for (i in 0 until minOf(feedArray.length(), 9)) {
             newFeed.put(feedArray.get(i))
         }
 
@@ -70,58 +62,34 @@ class StatsManager(private val context: Context) {
     }
 
     fun getRecentBlocks(): List<String> {
-        val json = prefs.getString(recentBlocksKey, "[]") ?: "[]"
-        val array = JSONArray(json)
+        val array = try { JSONArray(prefs.getString(recentBlocksKey, "[]") ?: "[]") } catch(e: Exception) { JSONArray() }
         val list = mutableListOf<String>()
         for (i in 0 until array.length()) {
-            list.add(array.getString(i))
+            list.add(array.optString(i, "unknown"))
         }
         return list
     }
 
     fun logAppBlocked(packageName: String) {
-        val json = prefs.getString(appStatsKey, "{}") ?: "{}"
-        val obj = JSONObject(json)
-        val count = obj.optInt(packageName, 0)
-        obj.put(packageName, count + 1)
+        val obj = try { JSONObject(prefs.getString(appStatsKey, "{}") ?: "{}") } catch(e: Exception) { JSONObject() }
+        obj.put(packageName, obj.optInt(packageName, 0) + 1)
         prefs.edit().putString(appStatsKey, obj.toString()).apply()
     }
 
     fun getAppBlockedCount(packageName: String): Int {
-        val json = prefs.getString(appStatsKey, "{}") ?: "{}"
-        val obj = JSONObject(json)
+        val obj = try { JSONObject(prefs.getString(appStatsKey, "{}") ?: "{}") } catch(e: Exception) { JSONObject() }
         return obj.optInt(packageName, 0)
     }
 
     fun getTopBlockedDomains(limit: Int = 5): List<Pair<String, Int>> {
-        val json = prefs.getString(topBlockedKey, "{}") ?: "{}"
-        val obj = JSONObject(json)
+        val obj = try { JSONObject(prefs.getString(topBlockedKey, "{}") ?: "{}") } catch(e: Exception) { JSONObject() }
         val list = mutableListOf<Pair<String, Int>>()
         val keys = obj.keys()
         while (keys.hasNext()) {
             val key = keys.next()
-            list.add(key to obj.getInt(key))
+            list.add(key to obj.optInt(key, 0))
         }
         return list.sortedByDescending { it.second }.take(limit)
-    }
-
-    fun getDataSavedEstimates(): String {
-        val kb = getBlockedAdsCount() * 50
-        return if (kb > 1024) {
-            String.format("%.2f MB", kb / 1024.0)
-        } else {
-            " KB"
-        }
-    }
-
-    fun getPrivacyScore(): Int {
-        val filterManager = FilterManager(context)
-        val enabledCount = filterManager.getEnabledFilterIds().size
-        val totalFilters = filterManager.getAllSources().size
-
-        var score = (enabledCount.toFloat() / totalFilters.toFloat() * 100).toInt()
-        score = minOf(100, score + 10)
-        return maxOf(10, score)
     }
 
     fun resetStats() {

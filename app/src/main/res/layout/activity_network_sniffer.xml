@@ -13,7 +13,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/network_rules"
+            app:title="@string/network_sniffer"
             app:titleTextColor="@color/on_surface" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -28,20 +28,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:text="Select Wi-Fi networks where ShieldBlock should be disabled."
+            android:text="Live view of intercepted UDP DNS packets."
             android:textColor="@color/on_surface_variant"
             android:textSize="14sp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/addCurrentWifiBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:text="Exclude Current Wi-Fi"
-            app:icon="@android:drawable/ic_menu_add" />
-
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/wifiRecyclerView"
+            android:id="@+id/snifferRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="8dp" />

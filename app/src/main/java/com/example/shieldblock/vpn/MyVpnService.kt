@@ -12,14 +12,17 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import androidx.core.app.NotificationCompat
 import androidx.preference.PreferenceManager
+import androidx.work.*
 import com.example.shieldblock.MainActivity
 import com.example.shieldblock.R
+import com.example.shieldblock.BlacklistWorker
 import com.example.shieldblock.data.BlacklistManager
 import com.example.shieldblock.data.WhitelistManager
 import com.example.shieldblock.data.FilterManager
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class MyVpnService : VpnService() {
     private var vpnInterface: ParcelFileDescriptor? = null
@@ -33,6 +36,7 @@ class MyVpnService : VpnService() {
         const val CHANNEL_ID = "ShieldBlockVPNChannel"
         const val NOTIFICATION_ID = 1
         var instance: MyVpnService? = null
+        const val FAKE_DNS_IP = "10.0.0.1"
     }
 
     override fun onCreate() {
@@ -42,6 +46,7 @@ class MyVpnService : VpnService() {
         whitelistManager = WhitelistManager(this)
         filterManager = FilterManager(this)
         createNotificationChannel()
+        scheduleAutoUpdates()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -59,6 +64,15 @@ class MyVpnService : VpnService() {
     }
 
     fun getTrafficStats(): Pair<Long, Long> = dnsProxy?.getTrafficStats() ?: (0L to 0L)
+
+    private fun scheduleAutoUpdates() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val hours = prefs.getInt("update_frequency", 24).toLong()
+        val workRequest = PeriodicWorkRequestBuilder<BlacklistWorker>(hours, TimeUnit.HOURS)
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("blacklist_update", ExistingPeriodicWorkPolicy.KEEP, workRequest)
+    }
 
     private fun isWithinSchedule(): Boolean {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
@@ -82,16 +96,23 @@ class MyVpnService : VpnService() {
         if (excludedSsids.isEmpty()) return false
 
         val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        val ssid = wm.connectionInfo?.ssid?.replace("\"", "") ?: ""
+        val info = try { wm.connectionInfo } catch(e: Exception) { null }
+        val ssid = info?.ssid?.replace("\"", "") ?: ""
         return excludedSsids.contains(ssid)
     }
 
     private fun startVpn() {
-        if (vpnInterface != null) return
+        if (vpnInterface != null) {
+            dnsProxy?.updateBlacklist(blacklistManager.loadLocalBlacklist())
+            dnsProxy?.updateWhitelist(whitelistManager.getWhitelist())
+            dnsProxy?.updateCustomRules(filterManager.getCustomRules())
+            return
+        }
+
         setupVpn()
         if (vpnInterface == null) return
 
-        val proxy = DnsProxy(vpnInterface!!.fileDescriptor, this)
+        val proxy = DnsProxy(vpnInterface!!, this)
         dnsProxy = proxy
         proxy.updateBlacklist(blacklistManager.loadLocalBlacklist())
         proxy.updateWhitelist(whitelistManager.getWhitelist())
@@ -106,9 +127,9 @@ class MyVpnService : VpnService() {
     private fun setupVpn() {
         val builder = Builder()
         builder.setSession("ShieldBlockVPN")
-        builder.addAddress("10.0.0.2", 24)
-        builder.addDnsServer("8.8.8.8")
-        builder.addRoute("0.0.0.0", 0)
+        builder.addAddress("10.0.0.2", 32)
+        builder.addDnsServer(FAKE_DNS_IP)
+        builder.addRoute(FAKE_DNS_IP, 32)
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val excludedApps = prefs.getStringSet("excluded_apps", emptySet()) ?: emptySet()
@@ -127,7 +148,7 @@ class MyVpnService : VpnService() {
             val serviceChannel = NotificationChannel(
                 CHANNEL_ID,
                 "ShieldBlock VPN Service",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(serviceChannel)
@@ -145,17 +166,21 @@ class MyVpnService : VpnService() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("ShieldBlock VPN")
-            .setContentText("Your connection is secure and ads are being blocked.")
+            .setContentTitle("ShieldBlock Ultra active")
+            .setContentText("Privacy protection is enabled.")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
             .setContentIntent(pendingIntent)
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopPendingIntent)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Deactivate", stopPendingIntent)
             .build()
     }
 
     private fun stopVpn() {
         dnsProxyJob?.cancel()
-        vpnInterface?.close()
+        try {
+            vpnInterface?.close()
+        } catch (e: Exception) {}
         vpnInterface = null
         dnsProxy = null
         stopForeground(STOP_FOREGROUND_REMOVE)

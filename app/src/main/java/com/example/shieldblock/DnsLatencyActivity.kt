@@ -1,6 +1,8 @@
 package com.example.shieldblock
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -36,11 +38,55 @@ class DnsLatencyActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
+        setupBottomNavigation()
         binding.latencyRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.latencyRecyclerView.adapter = LatencyAdapter(providers)
 
-        binding.startTestButton.setOnClickListener {
-            runBenchmark()
+        binding.startTestButton.setOnClickListener { runBenchmark() }
+
+        binding.pingBtn.setOnClickListener {
+            val host = binding.manualLookupInput.text.toString().ifBlank { "google.com" }
+            runManualTest("PING", host)
+        }
+
+        binding.lookupBtn.setOnClickListener {
+            val host = binding.manualLookupInput.text.toString().ifBlank { "google.com" }
+            runManualTest("LOOKUP", host)
+        }
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.nav_settings
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            when (item.itemId) {
+                R.id.nav_home -> { startActivity(Intent(this, MainActivity::class.java)); finish(); true }
+                R.id.nav_analytics -> { startActivity(Intent(this, AnalyticsActivity::class.java)); finish(); true }
+                R.id.nav_apps -> { startActivity(Intent(this, AppExclusionActivity::class.java)); finish(); true }
+                R.id.nav_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); finish(); true }
+                else -> false
+            }
+        }
+    }
+
+    private fun runManualTest(type: String, host: String) {
+        binding.manualResultText.text = "Testing $host..."
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    if (type == "PING") {
+                        val start = System.currentTimeMillis()
+                        val reachable = InetAddress.getByName(host).isReachable(3000)
+                        if (reachable) "Reply from $host: ${System.currentTimeMillis() - start}ms" else "Request timed out"
+                    } else {
+                        val addr = InetAddress.getByName(host)
+                        "Resolved $host to ${addr.hostAddress}"
+                    }
+                } catch (e: Exception) {
+                    "Error: ${e.message}"
+                }
+            }
+            binding.manualResultText.text = result
         }
     }
 

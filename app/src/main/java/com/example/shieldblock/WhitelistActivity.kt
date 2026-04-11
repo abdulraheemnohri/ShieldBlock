@@ -1,8 +1,10 @@
 package com.example.shieldblock
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
@@ -28,14 +30,12 @@ class WhitelistActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
+        setupBottomNavigation()
         binding.whitelistRecyclerView.layoutManager = LinearLayoutManager(this)
-
         refreshList()
 
         binding.searchWhitelistEditText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                applyFilter(s.toString())
-            }
+            override fun afterTextChanged(s: Editable?) { applyFilter(s.toString()) }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
@@ -50,6 +50,20 @@ class WhitelistActivity : AppCompatActivity() {
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
+        }
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.nav_settings
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            when (item.itemId) {
+                R.id.nav_home -> { startActivity(Intent(this, MainActivity::class.java)); finish(); true }
+                R.id.nav_analytics -> { startActivity(Intent(this, AnalyticsActivity::class.java)); finish(); true }
+                R.id.nav_apps -> { startActivity(Intent(this, AppExclusionActivity::class.java)); finish(); true }
+                R.id.nav_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); finish(); true }
+                else -> false
+            }
         }
     }
 

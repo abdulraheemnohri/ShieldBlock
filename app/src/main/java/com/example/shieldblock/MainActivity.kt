@@ -5,7 +5,6 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -21,6 +20,7 @@ import android.provider.Settings
 import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.view.animation.LinearInterpolator
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -36,6 +36,7 @@ import com.example.shieldblock.data.StatsManager
 import com.example.shieldblock.data.WhitelistManager
 import com.example.shieldblock.databinding.ActivityMainBinding
 import com.example.shieldblock.vpn.MyVpnService
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
@@ -44,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private val statsManager by lazy { StatsManager(this) }
     private val handler = Handler(Looper.getMainLooper())
     private var statusPulse: ObjectAnimator? = null
+    private var shieldRotate: ObjectAnimator? = null
     private var lastBytesRead = 0L
 
     private val permissionLauncher = registerForActivityResult(
@@ -72,10 +74,13 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupBottomNavigation()
+        setupQuickActions()
         requestNecessaryPermissions()
         checkBatteryOptimizations()
 
-        updateVpnUi(VpnService.prepare(this) == null)
+        val isRunning = VpnService.prepare(this) == null
+        updateVpnUi(isRunning)
         updateStats()
         updateNetworkInfo()
 
@@ -87,26 +92,49 @@ class MainActivity : AppCompatActivity() {
             it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             stopVpn()
         }
-        binding.settingsButton.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
-        binding.analyticsCard.setOnClickListener {
-            startActivity(Intent(this, AnalyticsActivity::class.java))
-        }
-
-        binding.quickBenchmarkBtn.setOnClickListener { startActivity(Intent(this, DnsLatencyActivity::class.java)) }
-        binding.quickAppsBtn.setOnClickListener { startActivity(Intent(this, AppExclusionActivity::class.java)) }
-        binding.quickLogsBtn.setOnClickListener { startActivity(Intent(this, LogActivity::class.java)) }
-
-        binding.shareButton.setOnClickListener {
-            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, "Secure your connection with ShieldBlock Ultra!")
-            }
-            startActivity(Intent.createChooser(shareIntent, "Share ShieldBlock"))
-        }
 
         animateEntrance()
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.nav_home
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            when (item.itemId) {
+                R.id.nav_home -> true
+                R.id.nav_analytics -> {
+                    startActivity(Intent(this, AnalyticsActivity::class.java))
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    false
+                }
+                R.id.nav_apps -> {
+                    startActivity(Intent(this, AppExclusionActivity::class.java))
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    false
+                }
+                R.id.nav_settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    false
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun setupQuickActions() {
+        binding.quickScanBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            startActivity(Intent(this, SecurityAuditActivity::class.java))
+        }
+        binding.quickDnsBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            startActivity(Intent(this, DnsLatencyActivity::class.java))
+        }
+        binding.quickLogBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            startActivity(Intent(this, LogActivity::class.java))
+        }
     }
 
     private fun requestNecessaryPermissions() {
@@ -130,12 +158,12 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 AlertDialog.Builder(this)
-                    .setTitle("Background Location Needed")
-                    .setMessage("To automatically disable the VPN on trusted Wi-Fi networks, ShieldBlock needs background location access. Please select 'Allow all the time' in settings.")
-                    .setPositiveButton("Settings") { _, _ ->
+                    .setTitle(R.string.background_location_title)
+                    .setMessage(R.string.background_location_msg)
+                    .setPositiveButton(R.string.nav_settings) { _, _ ->
                         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), 101)
                     }
-                    .setNegativeButton("Cancel", null)
+                    .setNegativeButton(R.string.cancel, null)
                     .show()
             }
         }
@@ -143,13 +171,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkBatteryOptimizations() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val intent = Intent()
             val packageName = packageName
             val pm = getSystemService(POWER_SERVICE) as PowerManager
             if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                binding.statusSubText.text = "⚠️ Battery optimization is active. VPN may disconnect."
+                binding.statusSubText.setText(R.string.battery_optimization_warning)
                 binding.statusSubText.setOnClickListener {
-                    intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
                     intent.data = Uri.parse("package:$packageName")
                     startActivity(intent)
                 }
@@ -173,6 +200,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        binding.bottomNavigation.selectedItemId = R.id.nav_home
         updateVpnUi(VpnService.prepare(this) == null)
         handler.post(updateStatsRunnable)
     }
@@ -199,7 +227,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateStats() {
         val adsBlocked = statsManager.getBlockedAdsCount()
         val totalQueries = statsManager.getTotalQueries()
-        val dataSaved = (adsBlocked * 0.15).coerceAtMost(999.0) // Estimate 150KB per ad
+        val dataSaved = (adsBlocked * 0.15).coerceAtMost(999.0)
 
         binding.blockedAdsCountText.text = adsBlocked.toString()
         binding.dataSavedText.text = String.format("%.1f MB", dataSaved)
@@ -209,7 +237,7 @@ class MainActivity : AppCompatActivity() {
             (100 - (1.0 - blockedRatio) * 20).toInt().coerceIn(0, 100)
         }
 
-        binding.privacyScoreText.text = score.toString()
+        binding.privacyScoreText.text = getString(R.string.rating_label, score)
         binding.privacyProgressBar.progress = score
 
         val grade = when {
@@ -228,7 +256,6 @@ class MainActivity : AppCompatActivity() {
         binding.privacyGradeText.setTextColor(gradeColor)
         binding.privacyProgressBar.setIndicatorColor(gradeColor)
 
-        updateTopBlocked()
         updateRecentFeed()
     }
 
@@ -236,25 +263,43 @@ class MainActivity : AppCompatActivity() {
         val recent = statsManager.getRecentBlocks()
         binding.recentBlocksContainer.removeAllViews()
         val title = TextView(this)
-        title.text = "LIVE FEED"; title.setTextColor(getColor(R.color.primary)); title.textSize = 10f; title.setPadding(0, 0, 0, 8)
+        title.setText(R.string.live_threat_monitor)
+        title.setTextColor(getColor(R.color.primary))
+        title.textSize = 10f
+        title.setPadding(0, 0, 0, 8)
         binding.recentBlocksContainer.addView(title)
 
         if (recent.isEmpty()) {
-            val tv = TextView(this); tv.text = "Waiting for activity..."; tv.setTextColor(getColor(R.color.on_surface_variant)); tv.textSize = 12f
+            val tv = TextView(this)
+            tv.setText(R.string.scanning_threats)
+            tv.setTextColor(getColor(R.color.on_surface_variant))
+            tv.textSize = 12f
             binding.recentBlocksContainer.addView(tv)
         } else {
-            recent.forEach { domain ->
-                val tv = TextView(this); tv.text = "• $domain"; tv.setTextColor(getColor(R.color.on_surface)); tv.textSize = 11f; tv.setPadding(0, 4, 0, 4)
-                tv.isClickable = true; tv.setBackgroundResource(android.R.drawable.list_selector_background); tv.setOnClickListener { showDomainDetail(domain) }
+            recent.take(3).forEach { domain ->
+                val tv = TextView(this)
+                tv.text = "• $domain"
+                tv.setTextColor(getColor(R.color.on_surface))
+                tv.textSize = 11f
+                tv.setPadding(0, 4, 0, 4)
+                tv.isClickable = true
+                tv.setBackgroundResource(android.R.drawable.list_selector_background)
+                tv.setOnClickListener { showWhitelistDialog(domain) }
                 binding.recentBlocksContainer.addView(tv)
             }
         }
     }
 
-    private fun showDomainDetail(domain: String) {
-        AlertDialog.Builder(this).setTitle("Domain Detail").setMessage("Domain: $domain\nAction: Blocked")
-            .setPositiveButton("Whitelist") { _, _ -> whitelistManager.addToWhitelist(domain) }
-            .setNegativeButton("Close", null).show()
+    private fun showWhitelistDialog(domain: String) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.whitelist_dialog_title)
+            .setMessage(getString(R.string.whitelist_dialog_msg, domain))
+            .setPositiveButton(R.string.allow) { _, _ ->
+                whitelistManager.addToWhitelist(domain)
+                Toast.makeText(this, getString(R.string.whitelisted_toast, domain), Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun updateNetworkInfo() {
@@ -270,23 +315,11 @@ class MainActivity : AppCompatActivity() {
         val currentRead = stats.first
         val speed = if (lastBytesRead > 0) (currentRead - lastBytesRead) / 1024 else 0
         lastBytesRead = currentRead
-        binding.networkInfoText.text = "$networkType • $speed KB/s processed"
-    }
 
-    private fun updateTopBlocked() {
-        val topDomains = statsManager.getTopBlockedDomains()
-        binding.topBlockedContainer.removeAllViews()
-        if (topDomains.isEmpty()) {
-            val tv = TextView(this); tv.text = "No domains blocked yet"; tv.setTextColor(getColor(R.color.on_surface_variant)); binding.topBlockedContainer.addView(tv)
-        } else {
-            topDomains.forEach { (domain, count) ->
-                val row = LinearLayout(this); row.orientation = LinearLayout.HORIZONTAL; row.setPadding(0, 8, 0, 8)
-                row.isClickable = true; row.setBackgroundResource(android.R.drawable.list_selector_background); row.setOnClickListener { showDomainDetail(domain) }
-                val dTv = TextView(this); dTv.text = domain; dTv.layoutParams = LinearLayout.LayoutParams(0, -2, 1f); dTv.setTextColor(getColor(R.color.on_surface))
-                val cTv = TextView(this); cTv.text = count.toString(); cTv.setTextColor(getColor(R.color.primary)); cTv.setPadding(16, 0, 0, 0)
-                row.addView(dTv); row.addView(cTv); binding.topBlockedContainer.addView(row)
-            }
-        }
+        val bm = getSystemService(BATTERY_SERVICE) as BatteryManager
+        val bat = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+
+        binding.networkInfoText.text = "$networkType • $speed KB/s • $bat% Battery"
     }
 
     private fun startVpn() {
@@ -306,15 +339,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateVpnUi(isConnected: Boolean) {
         if (isConnected) {
-            binding.statusText.text = "Protected"; binding.statusSubText.text = "Your connection is encrypted and filtered"
-            binding.statusText.setTextColor(getColor(R.color.primary)); binding.statusIcon.setColorFilter(getColor(R.color.primary))
-            binding.startVpnButton.visibility = View.GONE; binding.stopVpnButton.visibility = View.VISIBLE; startPulseAnimation()
+            binding.statusText.setText(R.string.protected_status)
+            binding.statusSubText.setText(R.string.status_filtering_active)
+            binding.statusText.setTextColor(getColor(R.color.primary))
+            binding.statusIcon.setColorFilter(getColor(R.color.primary))
+            binding.startVpnButton.visibility = View.GONE
+            binding.stopVpnButton.visibility = View.VISIBLE
+            startPulseAnimation()
+            startRotateAnimation()
         } else {
-            binding.statusText.text = "Unprotected"; binding.statusSubText.text = "Your connection is direct and unfiltered"
-            binding.statusText.setTextColor(getColor(R.color.tertiary)); binding.statusIcon.setColorFilter(getColor(R.color.tertiary))
-            binding.startVpnButton.visibility = View.VISIBLE; binding.stopVpnButton.visibility = View.GONE; stopPulseAnimation()
+            binding.statusText.setText(R.string.unprotected_status)
+            binding.statusSubText.setText(R.string.status_deactivated)
+            binding.statusText.setTextColor(getColor(R.color.tertiary))
+            binding.statusIcon.setColorFilter(getColor(R.color.tertiary))
+            binding.startVpnButton.visibility = View.VISIBLE
+            binding.stopVpnButton.visibility = View.GONE
+            stopPulseAnimation()
+            stopRotateAnimation()
         }
-        sendBroadcast(Intent("com.example.shieldblock.VPN_STATUS_CHANGED"))
     }
 
     private fun startPulseAnimation() {
@@ -329,6 +371,17 @@ class MainActivity : AppCompatActivity() {
     private fun stopPulseAnimation() {
         statusPulse?.cancel(); statusPulse = null
         binding.statusCard.scaleX = 1.0f; binding.statusCard.scaleY = 1.0f
+    }
+
+    private fun startRotateAnimation() {
+        if (shieldRotate != null) return
+        shieldRotate = ObjectAnimator.ofFloat(binding.statusIcon, "rotation", 0f, 360f).apply {
+            duration = 4000; repeatCount = ObjectAnimator.INFINITE; interpolator = LinearInterpolator(); start()
+        }
+    }
+
+    private fun stopRotateAnimation() {
+        shieldRotate?.cancel(); shieldRotate = null; binding.statusIcon.rotation = 0f
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -13,13 +13,14 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Settings"
+            app:title="@string/nav_settings"
             app:titleTextColor="@color/on_surface" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="80dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -28,11 +29,11 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Preferences Section -->
+            <!-- Protection Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="General Preferences"
+                android:text="@string/advanced_protection"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -51,85 +52,146 @@
                     android:orientation="vertical">
 
                     <LinearLayout
-                        android:id="@+id/themeSettingsLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:orientation="vertical"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true">
-                        <TextView
-                            android:layout_width="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="App Theme"
-                            android:textColor="@color/on_surface"
-                            android:textSize="16sp" />
-                        <TextView
-                            android:id="@+id/currentThemeText"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/strict_mode"
+                                android:textColor="@color/on_surface"
+                                android:textSize="16sp" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/strict_mode_desc"
+                                android:textColor="@color/on_surface_variant"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/strictModeSwitch"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="System Default"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
 
                     <LinearLayout
-                        android:id="@+id/performanceProfileLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:orientation="vertical"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true">
-                        <TextView
-                            android:layout_width="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="Performance Profile"
-                            android:textColor="@color/on_surface"
-                            android:textSize="16sp" />
-                        <TextView
-                            android:id="@+id/currentProfileText"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/smart_filtering"
+                                android:textColor="@color/on_surface"
+                                android:textSize="16sp" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/smart_filtering_desc"
+                                android:textColor="@color/on_surface_variant"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/smartFilteringSwitch"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Balanced"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
 
                     <LinearLayout
-                        android:id="@+id/scheduledProtectionLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:orientation="vertical"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true">
-                        <TextView
-                            android:layout_width="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="Scheduled Protection"
-                            android:textColor="@color/on_surface"
-                            android:textSize="16sp" />
-                        <TextView
-                            android:id="@+id/currentScheduleText"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/data_saver"
+                                android:textColor="@color/on_surface"
+                                android:textSize="16sp" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/data_saver_desc"
+                                android:textColor="@color/on_surface_variant"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/dataSaverSwitch"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Disabled"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Profiles Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/protection_profiles"
+                android:textColor="@color/primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/surface_container_low"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/profileKidsBtn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:text="@string/apply_kids_mode"
+                        android:textColor="@color/on_surface"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" />
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
+
+                    <TextView
+                        android:id="@+id/profileWorkBtn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:text="@string/apply_work_mode"
+                        android:textColor="@color/on_surface"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -139,7 +201,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="Filtering &amp; Rules"
+                android:text="@string/filtering_rules"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -168,22 +230,18 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Blocklist Sources"
+                            android:text="@string/blocklist_sources"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Manage URLs and local hosts files"
+                            android:text="Manage URLs and local files"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="14sp" />
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
 
                     <LinearLayout
                         android:id="@+id/ruleEditorLayout"
@@ -196,22 +254,18 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Quick Rule Search"
+                            android:text="@string/rule_search"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Search and whitelist domains from blocklist"
+                            android:text="Edit custom blocking rules"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="14sp" />
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
 
                     <LinearLayout
                         android:id="@+id/manageWhitelistLayout"
@@ -224,118 +278,13 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Manage Whitelist"
+                            android:text="@string/manage_whitelist"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="View and remove allowed domains"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
-
-                    <LinearLayout
-                        android:id="@+id/updateFrequencyLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:orientation="vertical"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Auto-Update Frequency"
-                            android:textColor="@color/on_surface"
-                            android:textSize="16sp" />
-                        <TextView
-                            android:id="@+id/currentFrequencyText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Every 24 hours"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Advanced Manual Editors -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="Advanced Manual Editors"
-                android:textColor="@color/primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/surface_container_low"
-                app:cardCornerRadius="16dp"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:id="@+id/manualWhitelistEditorLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:orientation="vertical"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Edit Whitelist File"
-                            android:textColor="@color/on_surface"
-                            android:textSize="16sp" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Directly edit whitelist_manual.txt"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
-
-                    <LinearLayout
-                        android:id="@+id/manualRulesEditorLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:orientation="vertical"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Edit Custom Rules File"
-                            android:textColor="@color/on_surface"
-                            android:textSize="16sp" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Directly edit blacklist_custom.txt"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="14sp" />
                     </LinearLayout>
@@ -348,7 +297,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="Network &amp; Apps"
+                android:text="@string/network_apps"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -377,7 +326,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Upstream DNS Server"
+                            android:text="@string/upstream_dns"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
@@ -389,11 +338,7 @@
                             android:textSize="14sp" />
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
 
                     <LinearLayout
                         android:id="@+id/dnsLatencyLayout"
@@ -406,7 +351,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="DNS Benchmark"
+                            android:text="@string/dns_benchmark"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
@@ -417,39 +362,7 @@
                             android:textSize="14sp" />
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
-
-                    <LinearLayout
-                        android:id="@+id/appExclusionLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:orientation="vertical"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Apps Management"
-                            android:textColor="@color/on_surface"
-                            android:textSize="16sp" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Exclude apps and view per-app stats"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
 
                     <LinearLayout
                         android:id="@+id/networkRulesLayout"
@@ -462,7 +375,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Network Rules"
+                            android:text="@string/network_rules"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
@@ -476,12 +389,12 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Advanced Section -->
+            <!-- Regular Settings -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="Advanced &amp; Maintenance"
+                android:text="@string/general_settings"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -500,7 +413,7 @@
                     android:orientation="vertical">
 
                     <LinearLayout
-                        android:id="@+id/updateBlocklistsButton"
+                        android:id="@+id/themeSettingsLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
@@ -510,71 +423,52 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Force Blocklist Update"
-                            android:textColor="@color/primary"
-                            android:textSize="16sp" />
-                        <TextView
-                            android:id="@+id/lastUpdateText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Last updated: Never"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
-
-                    <LinearLayout
-                        android:id="@+id/backupConfigLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:orientation="vertical"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Backup &amp; Restore"
+                            android:text="@string/app_theme"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
+                            android:id="@+id/currentThemeText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Export/Import full JSON configuration"
+                            android:text="System Default"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="14sp" />
                     </LinearLayout>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
 
-                    <TextView
-                        android:id="@+id/resetAllButton"
+                    <LinearLayout
+                        android:id="@+id/performanceProfileLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="Reset to Factory Defaults"
-                        android:textColor="@color/tertiary"
+                        android:orientation="vertical"
                         android:background="?attr/selectableItemBackground"
-                        android:clickable="true" />
+                        android:clickable="true">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/perf_profile"
+                            android:textColor="@color/on_surface"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:id="@+id/currentProfileText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Balanced"
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="14sp" />
+                    </LinearLayout>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Support Section -->
+            <!-- Support & Data -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="Support &amp; Data"
+                android:text="System"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -591,29 +485,49 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/backupConfigBtn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:text="@string/export_config"
+                        android:textColor="@color/on_surface"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" />
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
+
+                    <TextView
+                        android:id="@+id/resetStatsBtn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:text="@string/clear_stats"
+                        android:textColor="@color/tertiary"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" />
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
 
                     <TextView
                         android:id="@+id/viewLogsButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="View Activity Logs"
+                        android:text="@string/activity_logs"
                         android:textColor="@color/on_surface"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true" />
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/outline_variant" android:alpha="0.2" />
 
                     <TextView
                         android:id="@+id/aboutButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="About &amp; System Health"
+                        android:text="@string/system_health"
                         android:textColor="@color/on_surface"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true" />
@@ -621,7 +535,19 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <View android:layout_width="match_parent" android:layout_height="48dp" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/surface"
+        app:menu="@menu/bottom_nav_menu"
+        app:itemIconTint="@color/primary"
+        app:itemTextColor="@color/on_surface_variant" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

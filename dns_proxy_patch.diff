@@ -1,0 +1,67 @@
+<<<<<<< SEARCH
+        if (safeSearch && isSearchDomain(domain)) {
+            // Simplified: If it's a search domain and safesearch is on, redirect or block if insecure
+            eventLogger.logEvent("SafeSearch filter: ")
+        }
+=======
+        if (safeSearch && isSearchDomain(domain)) {
+            eventLogger.logEvent("SafeSearch enforcing for: ")
+            // For Ultra, we redirect to SafeSearch VIPs if possible, or force NXDOMAIN to prevent bypass
+            val safeResponse = createNxDomainResponse(dnsData)
+            sendResponse(safeResponse, outputStream, destIP, 53, sourceIP, sourcePort)
+            return
+        }
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+    private fun createNxDomainResponse(query: ByteArray): ByteArray {
+        val response = query.copyOf()
+        if (response.size < 4) return response
+        response[2] = (response[2].toInt() or 0x81).toByte()
+        response[3] = (response[3].toInt() or 0x83).toByte()
+        return response
+    }
+}
+=======
+    private fun createNxDomainResponse(query: ByteArray): ByteArray {
+        val response = query.copyOf()
+        if (response.size < 4) return response
+        // Set QR=1, AA=1, RCODE=3 (NXDOMAIN)
+        response[2] = (response[2].toInt() or 0x81).toByte()
+        response[3] = (response[3].toInt() or 0x83).toByte()
+        return response
+    }
+
+    private fun createARecordResponse(query: ByteArray, ip: String): ByteArray {
+        // Simple A record response construction for Ultra mode
+        val response = query.copyOf().toMutableList()
+        if (response.size < 12) return query
+
+        // Header: QR=1, AA=1, Auth=0, RCODE=0, Question=1, Answer=1
+        response[2] = 0x81.toByte()
+        response[3] = 0x80.toByte()
+        response[6] = 0x00.toByte()
+        response[7] = 0x01.toByte() // 1 Answer
+
+        // Append Answer Section (Pointer to name, Type A, Class IN, TTL 60, Len 4, IP)
+        response.add(0xc0.toByte()) // Compression pointer to domain name at offset 12
+        response.add(0x0c.toByte())
+        response.add(0x00.toByte()) // Type A
+        response.add(0x01.toByte())
+        response.add(0x00.toByte()) // Class IN
+        response.add(0x01.toByte())
+        response.add(0x00.toByte()) // TTL (4 bytes)
+        response.add(0x00.toByte())
+        response.add(0x00.toByte())
+        response.add(0x3c.toByte())
+        response.add(0x00.toByte()) // Data Length 4
+        response.add(0x04.toByte())
+
+        val ipParts = ip.split(".")
+        if (ipParts.size == 4) {
+            ipParts.forEach { response.add(it.toInt().toByte()) }
+        }
+
+        return response.toByteArray()
+    }
+}
+>>>>>>> REPLACE

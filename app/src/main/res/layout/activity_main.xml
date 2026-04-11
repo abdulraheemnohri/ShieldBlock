@@ -8,44 +8,42 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/background"
-        app:elevation="0dp">
-
+        android:background="@color/surface">
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="ShieldBlock"
+            app:title="@string/app_name"
             app:titleTextColor="@color/on_surface" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/main_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="80dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="16dp">
 
-            <!-- Privacy Grade Header -->
+            <!-- Privacy Score Header -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/analyticsCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/surface_container_highest"
+                app:cardBackgroundColor="@color/surface_container"
                 app:cardCornerRadius="24dp"
-                app:strokeWidth="0dp"
-                android:clickable="true"
-                android:focusable="true">
+                app:strokeWidth="0dp">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="24dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
                     <FrameLayout
                         android:layout_width="80dp"
@@ -57,97 +55,107 @@
                             android:progress="85"
                             app:indicatorSize="80dp"
                             app:trackThickness="8dp"
-                            app:indicatorColor="@color/primary"
-                            app:trackColor="@color/outline_variant" />
+                            app:trackCornerRadius="4dp"
+                            app:trackColor="@color/surface_variant" />
                         <TextView
                             android:id="@+id/privacyGradeText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:text="A"
-                            android:textColor="@color/on_surface"
-                            android:textSize="24sp"
+                            android:textColor="@color/primary"
+                            android:textSize="32sp"
                             android:textStyle="bold" />
                     </FrameLayout>
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginStart="24dp"
                         android:orientation="vertical">
                         <TextView
-                            android:id="@+id/privacyScoreText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Score: 85"
+                            android:text="@string/shield_integrity"
                             android:textColor="@color/on_surface"
                             android:textSize="18sp"
                             android:textStyle="bold" />
                         <TextView
+                            android:id="@+id/privacyScoreText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Rating: --"
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="14sp" />
+                        <TextView
                             android:id="@+id/networkInfoText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Detecting network..."
-                            android:textColor="@color/on_surface_variant"
+                            android:layout_marginTop="8dp"
+                            android:text="Monitoring..."
+                            android:textColor="@color/secondary"
                             android:textSize="12sp"
-                            android:layout_marginTop="4dp" />
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Quick Actions -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:scrollbars="none">
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/quickBenchmarkBtn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Benchmark"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_marginEnd="8dp"
-                        app:icon="@android:drawable/ic_menu_compass" />
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/quickAppsBtn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Apps"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_marginEnd="8dp"
-                        app:icon="@android:drawable/ic_menu_manage" />
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/quickLogsBtn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Logs"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        app:icon="@android:drawable/ic_menu_recent_history" />
-                </LinearLayout>
-            </HorizontalScrollView>
-
-            <!-- Real-time Stats -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/quickScanBtn"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:text="Audit"
+                    app:icon="@android:drawable/ic_menu_search" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/quickDnsBtn"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="4dp"
+                    android:text="DNS"
+                    app:icon="@android:drawable/ic_menu_compass" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/quickLogBtn"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:text="Logs"
+                    app:icon="@android:drawable/ic_menu_recent_history" />
+
+            </LinearLayout>
+
+            <!-- Statistics Grid -->
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:columnCount="2"
+                android:rowCount="1">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_columnWeight="1"
                     android:layout_marginEnd="8dp"
                     app:cardBackgroundColor="@color/surface_container_low"
                     app:cardCornerRadius="16dp"
                     app:strokeWidth="0dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -159,12 +167,12 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textColor="@color/primary"
-                            android:textSize="28sp"
+                            android:textSize="24sp"
                             android:textStyle="bold" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Ads Blocked"
+                            android:text="@string/ads_intercepted"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -173,12 +181,11 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_columnWeight="1"
                     android:layout_marginStart="8dp"
                     app:cardBackgroundColor="@color/surface_container_low"
                     app:cardCornerRadius="16dp"
                     app:strokeWidth="0dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -188,52 +195,20 @@
                             android:id="@+id/dataSavedText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 KB"
+                            android:text="0.0 MB"
                             android:textColor="@color/secondary"
-                            android:textSize="28sp"
+                            android:textSize="24sp"
                             android:textStyle="bold" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Data Saved"
+                            android:text="@string/bandwidth_saved"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="12sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-            </LinearLayout>
-
-            <!-- Recent Blocks Feed -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardBackgroundColor="@color/surface_container_low"
-                app:cardCornerRadius="16dp"
-                app:strokeWidth="0dp">
-                <LinearLayout
-                    android:id="@+id/recentBlocksContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="12dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="LIVE FEED"
-                        android:textColor="@color/primary"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="4dp" />
-                    <TextView
-                        android:id="@+id/noRecentText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Waiting for activity..."
-                        android:textColor="@color/on_surface_variant"
-                        android:textSize="12sp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </GridLayout>
 
             <!-- Status Card -->
             <com.google.android.material.card.MaterialCardView
@@ -270,7 +245,7 @@
                             android:id="@+id/statusText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Protected"
+                            android:text="@string/protected_status"
                             android:textColor="@color/on_surface"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -279,30 +254,30 @@
                             android:id="@+id/statusSubText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Your connection is encrypted and filtered"
+                            android:text="Shield is active"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="14sp" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Main Toggle -->
+            <!-- Main Toggle Button -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
-                android:layout_marginTop="24dp">
+                android:layout_height="220dp"
+                android:layout_marginTop="16dp">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/startVpnButton"
-                    android:layout_width="180dp"
-                    android:layout_height="180dp"
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
                     android:layout_gravity="center"
                     android:insetLeft="0dp"
                     android:insetTop="0dp"
                     android:insetRight="0dp"
                     android:insetBottom="0dp"
-                    app:cornerRadius="90dp"
-                    android:text="Connect"
+                    app:cornerRadius="80dp"
+                    android:text="@string/activate"
                     android:textSize="18sp"
                     android:backgroundTint="@color/primary_container"
                     android:textColor="@color/on_primary_container"
@@ -313,69 +288,60 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
-                    android:text="Disconnect"
+                    android:text="@string/deactivate"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:textColor="@color/tertiary"
                     android:visibility="gone" />
 
             </FrameLayout>
 
-            <!-- Top Blocked Section -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="Top Blocked Domains"
-                android:textColor="@color/primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
+            <!-- Live Feed Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="24dp"
                 app:cardBackgroundColor="@color/surface_container_low"
                 app:cardCornerRadius="16dp"
                 app:strokeWidth="0dp">
-
                 <LinearLayout
-                    android:id="@+id/topBlockedContainer"
+                    android:id="@+id/recentBlocksContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
                     <TextView
-                        android:id="@+id/noBlockedText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="No domains blocked yet"
+                        android:text="@string/live_threat_monitor"
+                        android:textColor="@color/primary"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
+                    <TextView
+                        android:id="@+id/noRecentText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/scanning_threats"
                         android:textColor="@color/on_surface_variant"
-                        android:textSize="14sp" />
+                        android:textSize="12sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Settings Action -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/settingsButton"
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="16dp"
-                android:text="Full Settings &amp; Tools"
-                style="@style/Widget.Material3.Button.TonalButton"
-                app:cornerRadius="12dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/shareButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="48dp"
-                android:text="Share ShieldBlock"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:textColor="@color/on_surface_variant"
-                app:icon="@android:drawable/ic_menu_share" />
+                android:layout_height="100dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/surface"
+        app:menu="@menu/bottom_nav_menu"
+        app:itemIconTint="@color/primary"
+        app:itemTextColor="@color/on_surface_variant" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -3,7 +3,9 @@ package com.example.shieldblock
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -11,11 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
 import androidx.work.*
-import com.example.shieldblock.data.StatsManager
-import com.example.shieldblock.data.WhitelistManager
-import com.example.shieldblock.data.BlacklistManager
-import com.example.shieldblock.data.FilterManager
-import com.example.shieldblock.data.DnsProfile
+import com.example.shieldblock.data.*
 import com.example.shieldblock.databinding.SettingsActivityBinding
 import com.example.shieldblock.analytics.EventLogger
 import org.json.JSONObject
@@ -23,10 +21,9 @@ import java.util.concurrent.TimeUnit
 
 class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: SettingsActivityBinding
-    private val statsManager by lazy { StatsManager(this) }
-    private val whitelistManager by lazy { WhitelistManager(this) }
-    private val blacklistManager by lazy { BlacklistManager(this) }
     private val filterManager by lazy { FilterManager(this) }
+    private val statsManager by lazy { StatsManager(this) }
+    private val backupManager by lazy { BackupManager(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,77 +34,89 @@ class SettingsActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
-        // Theme
-        updateThemeText()
-        binding.themeSettingsLayout.setOnClickListener { showThemeDialog() }
+        setupBottomNavigation()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
 
-        // Profile
-        updatePerformanceProfileText()
-        binding.performanceProfileLayout.setOnClickListener { showPerformanceProfileDialog() }
+        // Ultra Protection
+        binding.strictModeSwitch.isChecked = prefs.getBoolean("strict_mode", false)
+        binding.strictModeSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean("strict_mode", isChecked).apply()
+        }
 
-        // Schedule
-        binding.scheduledProtectionLayout.setOnClickListener { showScheduleDialog() }
-        updateScheduleText()
+        binding.smartFilteringSwitch.isChecked = prefs.getBoolean("smart_filtering", false)
+        binding.smartFilteringSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean("smart_filtering", isChecked).apply()
+        }
+
+        binding.dataSaverSwitch.isChecked = prefs.getBoolean("data_saver", false)
+        binding.dataSaverSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean("data_saver", isChecked).apply()
+        }
+
+        // Profiles
+        binding.profileKidsBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            filterManager.applyProfile("KIDS")
+            refreshSwitches()
+            Toast.makeText(this, "Kids Mode Applied", Toast.LENGTH_SHORT).show()
+        }
+        binding.profileWorkBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            filterManager.applyProfile("WORK")
+            refreshSwitches()
+            Toast.makeText(this, "Work Mode Applied", Toast.LENGTH_SHORT).show()
+        }
 
         // Filtering
         binding.manageBlacklistLayout.setOnClickListener {
             startActivity(Intent(this, SourceManagementActivity::class.java))
         }
         binding.ruleEditorLayout.setOnClickListener {
-            startActivity(Intent(this, RuleEditorActivity::class.java))
-        }
-        binding.manageWhitelistLayout.setOnClickListener {
-            startActivity(Intent(this, WhitelistActivity::class.java))
-        }
-        binding.updateFrequencyLayout.setOnClickListener { showUpdateFrequencyDialog() }
-        updateFrequencyText()
-
-        // Manual Editors
-        binding.manualWhitelistEditorLayout.setOnClickListener {
             val intent = Intent(this, TextEditorActivity::class.java)
-            intent.putExtra("file_path", whitelistManager.getManualFilePath())
-            intent.putExtra("file_name", "whitelist_manual.txt")
-            startActivity(intent)
-        }
-        binding.manualRulesEditorLayout.setOnClickListener {
-            val intent = Intent(this, TextEditorActivity::class.java)
-            intent.putExtra("file_path", blacklistManager.getCustomFilePath())
+            intent.putExtra("file_path", BlacklistManager(this).getCustomFilePath())
             intent.putExtra("file_name", "blacklist_custom.txt")
             startActivity(intent)
         }
+        binding.manageWhitelistLayout.setOnClickListener {
+            val intent = Intent(this, TextEditorActivity::class.java)
+            intent.putExtra("file_path", WhitelistManager(this).getManualFilePath())
+            intent.putExtra("file_name", "whitelist_manual.txt")
+            startActivity(intent)
+        }
 
-        // DNS & Apps
+        // DNS & Tools
         updateDnsText()
         binding.dnsSettingsLayout.setOnClickListener { showDnsProfileDialog() }
         binding.dnsLatencyLayout.setOnClickListener {
             startActivity(Intent(this, DnsLatencyActivity::class.java))
         }
-        binding.appExclusionLayout.setOnClickListener {
-            startActivity(Intent(this, AppExclusionActivity::class.java))
-        }
         binding.networkRulesLayout.setOnClickListener {
             startActivity(Intent(this, NetworkRulesActivity::class.java))
         }
 
-        // Maintenance
-        updateLastUpdateText()
-        binding.updateBlocklistsButton.setOnClickListener {
-            scheduleWork(PreferenceManager.getDefaultSharedPreferences(this).getInt("update_frequency", 24))
-            Toast.makeText(this, "Update scheduled", Toast.LENGTH_SHORT).show()
-        }
-        binding.backupConfigLayout.setOnClickListener { showBackupRestoreDialog() }
-        binding.resetAllButton.setOnClickListener {
+        // Maintenance (Backup & Restore)
+        binding.backupConfigBtn.setOnClickListener { showBackupDialog() }
+        binding.resetStatsBtn.setOnClickListener {
             AlertDialog.Builder(this)
-                .setTitle("Factory Reset?")
-                .setMessage("This will clear ALL settings, rules, and statistics. This cannot be undone.")
-                .setPositiveButton("Reset Everything") { _, _ ->
-                    PreferenceManager.getDefaultSharedPreferences(this).edit().clear().apply()
+                .setTitle("Reset Data?")
+                .setMessage("This will clear all blocked counters and live feed history.")
+                .setPositiveButton("Reset") { _, _ ->
                     statsManager.resetStats()
-                    Toast.makeText(this, "App reset. Please restart.", Toast.LENGTH_LONG).show()
-                    finishAffinity()
+                    Toast.makeText(this, "Statistics Reset", Toast.LENGTH_SHORT).show()
                 }
-                .setNegativeButton("Cancel", null)
-                .show()
+                .setNegativeButton("Cancel", null).show()
+        }
+
+        // General
+        updateThemeText()
+        binding.themeSettingsLayout.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            showThemeDialog()
+        }
+        updatePerformanceProfileText()
+        binding.performanceProfileLayout.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            showPerformanceProfileDialog()
         }
 
         // Support
@@ -119,43 +128,77 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun showScheduleDialog() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val options = arrayOf("Enabled", "Disabled", "Set Start Time", "Set End Time")
+    private fun showBackupDialog() {
+        val options = arrayOf("Export Configuration", "Import Configuration")
         AlertDialog.Builder(this)
-            .setTitle("Scheduled Protection")
+            .setTitle("Backup & Restore")
             .setItems(options) { _, which ->
-                when(which) {
-                    0 -> { prefs.edit().putBoolean("scheduled_enabled", true).apply(); updateScheduleText() }
-                    1 -> { prefs.edit().putBoolean("scheduled_enabled", false).apply(); updateScheduleText() }
-                    2 -> showTimePicker("scheduled_start")
-                    3 -> showTimePicker("scheduled_end")
+                if (which == 0) {
+                    val json = backupManager.createBackup()
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "application/json"
+                        putExtra(Intent.EXTRA_TEXT, json)
+                    }
+                    startActivity(Intent.createChooser(intent, "Save Backup"))
+                } else {
+                    showImportDialog()
                 }
             }.show()
     }
 
-    private fun showTimePicker(key: String) {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        TimePickerDialog(this, { _, h, m ->
-            prefs.edit().putString(key, String.format("%02d:%02d", h, m)).apply()
-            updateScheduleText()
-        }, 0, 0, true).show()
+    private fun showImportDialog() {
+        val input = EditText(this)
+        input.hint = "Paste backup JSON here"
+        AlertDialog.Builder(this)
+            .setTitle("Import Config")
+            .setView(input)
+            .setPositiveButton("Import") { _, _ ->
+                val json = input.text.toString()
+                if (backupManager.restoreBackup(json)) {
+                    Toast.makeText(this, "Configuration Restored!", Toast.LENGTH_LONG).show()
+                    finishAffinity() // Restart app
+                } else {
+                    Toast.makeText(this, "Invalid Backup Format", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null).show()
     }
 
-    private fun updateScheduleText() {
+    private fun refreshSwitches() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val enabled = prefs.getBoolean("scheduled_enabled", false)
-        if (!enabled) {
-            binding.currentScheduleText.text = "Disabled"
-        } else {
-            val start = prefs.getString("scheduled_start", "00:00")
-            val end = prefs.getString("scheduled_end", "00:00")
-            binding.currentScheduleText.text = "Active between $start - $end"
+        binding.strictModeSwitch.isChecked = prefs.getBoolean("strict_mode", false)
+        binding.smartFilteringSwitch.isChecked = prefs.getBoolean("smart_filtering", false)
+        binding.dataSaverSwitch.isChecked = prefs.getBoolean("data_saver", false)
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.nav_settings
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_analytics -> {
+                    startActivity(Intent(this, AnalyticsActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_apps -> {
+                    startActivity(Intent(this, AppExclusionActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_settings -> true
+                else -> false
+            }
         }
     }
 
     private fun showPerformanceProfileDialog() {
-        val options = arrayOf("Performance (Real-time stats)", "Balanced (Every 5s)", "Battery Saver (Manual only)")
+        val options = arrayOf("Performance", "Balanced", "Battery Saver")
         val values = arrayOf("performance", "balanced", "battery_saver")
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val current = prefs.getString("perf_profile", "balanced")
@@ -164,8 +207,7 @@ class SettingsActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Performance Profile")
             .setSingleChoiceItems(options, checked) { dialog, which ->
-                val selected = values[which]
-                prefs.edit().putString("perf_profile", selected).apply()
+                prefs.edit().putString("perf_profile", values[which]).apply()
                 updatePerformanceProfileText()
                 dialog.dismiss()
             }.show()
@@ -173,103 +215,12 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun updatePerformanceProfileText() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val current = prefs.getString("perf_profile", "balanced")
-        binding.currentProfileText.text = current?.replace("_", " ")?.replaceFirstChar { it.uppercase() }
-    }
-
-    private fun showUpdateFrequencyDialog() {
-        val options = arrayOf("Every 12 hours", "Every 24 hours", "Every 48 hours")
-        val values = intArrayOf(12, 24, 48)
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val current = prefs.getInt("update_frequency", 24)
-        val checked = values.indexOf(current)
-
-        AlertDialog.Builder(this)
-            .setTitle("Update Frequency")
-            .setSingleChoiceItems(options, checked) { dialog, which ->
-                val freq = values[which]
-                prefs.edit().putInt("update_frequency", freq).apply()
-                scheduleWork(freq)
-                updateFrequencyText()
-                dialog.dismiss()
-            }.show()
-    }
-
-    private fun scheduleWork(hours: Int) {
-        val work = PeriodicWorkRequestBuilder<BlacklistWorker>(hours.toLong(), TimeUnit.HOURS).build()
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "blacklist_update",
-            ExistingPeriodicWorkPolicy.REPLACE,
-            work
-        )
-    }
-
-    private fun updateFrequencyText() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val current = prefs.getInt("update_frequency", 24)
-        binding.currentFrequencyText.text = "Every $current hours"
-    }
-
-    private fun showBackupRestoreDialog() {
-        val options = arrayOf("Export Config", "Import Config")
-        AlertDialog.Builder(this)
-            .setTitle("Backup & Restore")
-            .setItems(options) { _, which ->
-                if (which == 0) exportConfig() else importConfig()
-            }.show()
-    }
-
-    private fun exportConfig() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val all = prefs.all
-        val json = JSONObject(all)
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "application/json"
-            putExtra(Intent.EXTRA_TEXT, json.toString(4))
-            putExtra(Intent.EXTRA_SUBJECT, "ShieldBlock Config Backup")
-        }
-        startActivity(Intent.createChooser(intent, "Export Config"))
-    }
-
-    private fun importConfig() {
-        val input = EditText(this)
-        input.hint = "Paste JSON config here"
-        AlertDialog.Builder(this)
-            .setTitle("Import Config")
-            .setView(input)
-            .setPositiveButton("Import") { _, _ ->
-                try {
-                    val json = JSONObject(input.text.toString())
-                    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-                    val editor = prefs.edit()
-                    val keys = json.keys()
-                    while (keys.hasNext()) {
-                        val key = keys.next()
-                        when (val value = json.get(key)) {
-                            is Boolean -> editor.putBoolean(key, value)
-                            is String -> editor.putString(key, value)
-                            is Int -> editor.putInt(key, value)
-                        }
-                    }
-                    editor.apply()
-                    Toast.makeText(this, "Config imported. Restart recommended.", Toast.LENGTH_LONG).show()
-                } catch (e: Exception) {
-                    Toast.makeText(this, "Invalid JSON config", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        binding.currentProfileText.text = prefs.getString("perf_profile", "balanced")?.replaceFirstChar { it.uppercase() }
     }
 
     private fun updateDnsText() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         binding.currentDnsText.text = prefs.getString("custom_dns", "8.8.8.8")
-    }
-
-    private fun updateLastUpdateText() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val last = prefs.getString("last_blacklist_update", "Never")
-        binding.lastUpdateText.text = "Last updated: $last"
     }
 
     private fun showDnsProfileDialog() {
@@ -284,7 +235,6 @@ class SettingsActivity : AppCompatActivity() {
                     PreferenceManager.getDefaultSharedPreferences(this)
                         .edit().putString("custom_dns", selected.primaryDns).apply()
                     updateDnsText()
-                    Toast.makeText(this, "${selected.name} applied", Toast.LENGTH_SHORT).show()
                 } else {
                     showManualDnsDialog()
                 }
@@ -318,21 +268,20 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun showThemeDialog() {
         val themes = arrayOf("System Default", "Light", "Dark")
-        val themeValues = arrayOf("system", "light", "dark")
+        val values = arrayOf("system", "light", "dark")
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val currentTheme = prefs.getString("app_theme", "system")
-        val checkedItem = themeValues.indexOf(currentTheme ?: "system")
+        val current = prefs.getString("app_theme", "system")
+        val checkedItem = values.indexOf(current ?: "system")
 
         AlertDialog.Builder(this)
             .setTitle("Choose Theme")
             .setSingleChoiceItems(themes, checkedItem) { dialog, which ->
-                val selected = themeValues[which]
+                val selected = values[which]
                 prefs.edit().putString("app_theme", selected).apply()
                 applyTheme(selected)
                 updateThemeText()
                 dialog.dismiss()
-            }
-            .show()
+            }.show()
     }
 
     private fun applyTheme(theme: String) {
