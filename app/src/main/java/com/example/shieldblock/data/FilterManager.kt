@@ -4,13 +4,16 @@ import android.content.Context
 import androidx.preference.PreferenceManager
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 
 data class FilterSource(
     val id: String,
     val name: String,
     val url: String,
+    val type: String = "URL",
     var enabled: Boolean = true,
-    val category: String = "General"
+    val category: String = "General",
+    var domainCount: Int = 0
 )
 
 data class DnsProfile(
@@ -24,6 +27,7 @@ class FilterManager(private val context: Context) {
     private val enabledFiltersKey = "enabled_filters"
     private val customRulesKey = "custom_blocking_rules"
     private val customSourcesKey = "custom_filter_sources"
+    private val sourceCountsKey = "source_domain_counts"
 
     val defaultFilters = listOf(
         FilterSource("ads", "Standard Adblock", "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts", category = "Privacy"),
@@ -32,9 +36,8 @@ class FilterManager(private val context: Context) {
         FilterSource("gambling", "Gambling Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling/hosts", category = "Content"),
         FilterSource("porn", "Adult Content Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn/hosts", category = "Family"),
         FilterSource("crypto", "Crypto/Mining Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-social/hosts", category = "Security"),
-        // Regional
-        FilterSource("eu", "EU Regional Filters", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social/hosts", category = "Regional"),
-        FilterSource("asia", "Asia Regional Filters", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts", category = "Regional")
+        FilterSource("oisd", "OISD Basic", "https://small.oisd.nl", category = "Community"),
+        FilterSource("1hosts", "1Hosts Lite", "https://o0.pages.dev/Lite/hosts.txt", category = "Community")
     )
 
     val dnsProfiles = listOf(
@@ -59,27 +62,36 @@ class FilterManager(private val context: Context) {
         val json = prefs.getString(customSourcesKey, "[]") ?: "[]"
         val array = JSONArray(json)
         val list = mutableListOf<FilterSource>()
+        val counts = getSourceCounts()
         for (i in 0 until array.length()) {
             val obj = array.getJSONObject(i)
+            val id = obj.getString("id")
             list.add(FilterSource(
-                obj.getString("id"),
+                id,
                 obj.getString("name"),
                 obj.getString("url"),
-                category = "Custom"
+                obj.optString("type", "URL"),
+                getEnabledFilterIds().contains(id),
+                obj.optString("category", "Custom"),
+                counts.optInt(id, 0)
             ))
         }
         return list
     }
 
-    fun addCustomSource(name: String, url: String) {
+    fun addCustomSource(name: String, url: String, type: String = "URL", category: String = "Custom") {
         val sources = getCustomSources().toMutableList()
         val id = "custom_${System.currentTimeMillis()}"
-        sources.add(FilterSource(id, name, url))
+        sources.add(FilterSource(id, name, url, type, true, category))
         saveCustomSources(sources)
         setFilterEnabled(id, true)
     }
 
     fun removeCustomSource(id: String) {
+        val source = getCustomSources().find { it.id == id }
+        if (source?.type == "LOCAL") {
+            try { File(source.url).delete() } catch(e: Exception) {}
+        }
         val sources = getCustomSources().filter { it.id != id }
         saveCustomSources(sources)
         setFilterEnabled(id, false)
@@ -92,13 +104,29 @@ class FilterManager(private val context: Context) {
             obj.put("id", it.id)
             obj.put("name", it.name)
             obj.put("url", it.url)
+            obj.put("type", it.type)
+            obj.put("category", it.category)
             array.put(obj)
         }
         prefs.edit().putString(customSourcesKey, array.toString()).apply()
     }
 
+    fun getSourceCounts(): JSONObject {
+        val json = prefs.getString(sourceCountsKey, "{}") ?: "{}"
+        return JSONObject(json)
+    }
+
+    fun updateSourceCount(id: String, count: Int) {
+        val counts = getSourceCounts()
+        counts.put(id, count)
+        prefs.edit().putString(sourceCountsKey, counts.toString()).apply()
+    }
+
     fun getAllSources(): List<FilterSource> {
-        return defaultFilters + getCustomSources()
+        val counts = getSourceCounts()
+        val all = defaultFilters + getCustomSources()
+        all.forEach { it.domainCount = counts.optInt(it.id, 0) }
+        return all
     }
 
     fun getCustomRules(): Set<String> {
@@ -108,12 +136,6 @@ class FilterManager(private val context: Context) {
     fun addCustomRule(rule: String) {
         val current = getCustomRules().toMutableSet()
         current.add(rule)
-        prefs.edit().putStringSet(customRulesKey, current).apply()
-    }
-
-    fun removeCustomRule(rule: String) {
-        val current = getCustomRules().toMutableSet()
-        current.remove(rule)
         prefs.edit().putStringSet(customRulesKey, current).apply()
     }
 }

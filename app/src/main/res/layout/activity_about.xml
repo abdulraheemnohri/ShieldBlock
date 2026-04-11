@@ -41,11 +41,31 @@
                 android:layout_marginTop="16dp" />
 
             <TextView
+                android:id="@+id/currentVersionText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Version 2.0 (Pro Edition)"
+                android:text="Version 1.0 (Enterprise)"
                 android:textColor="@color/on_surface_variant"
                 android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/checkForUpdatesBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Check for Updates"
+                style="@style/Widget.Material3.Button.TonalButton"
+                app:icon="@android:drawable/ic_popup_sync" />
+
+            <TextView
+                android:id="@+id/updateStatusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Up to date"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:visibility="gone" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

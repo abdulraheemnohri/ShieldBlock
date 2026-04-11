@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/surface"
+        app:title="Blocklist Sources"
+        app:titleTextColor="@color/on_surface" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/addSourceBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Add URL"
+            android:layout_marginEnd="8dp"
+            app:icon="@android:drawable/ic_menu_add" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/uploadFileBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Upload File"
+            style="@style/Widget.Material3.Button.TonalButton"
+            app:icon="@android:drawable/ic_menu_upload" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/selectAllBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enable All"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/selectNoneBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Disable All"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sourceRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp" />
+
+</LinearLayout>

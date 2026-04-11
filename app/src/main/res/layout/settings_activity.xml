@@ -8,9 +8,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/background"
-        app:elevation="0dp">
-
+        android:background="@color/surface">
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
@@ -28,13 +26,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="16dp">
 
-            <!-- Automation & Appearance -->
+            <!-- Preferences Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Automation &amp; Appearance"
+                android:text="General Preferences"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -52,65 +50,8 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/autoStartSwitch"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:text="Auto-start VPN on boot"
-                        android:textColor="@color/on_surface" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
-
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/notificationSwitch"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:text="Show notifications"
-                        android:textColor="@color/on_surface" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
-
                     <LinearLayout
-                        android:id="@+id/scheduledProtectionLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:orientation="vertical"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Scheduled Protection"
-                            android:textColor="@color/on_surface"
-                            android:textSize="16sp" />
-                        <TextView
-                            android:id="@+id/currentScheduleText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Disabled"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/outline_variant"
-                        android:alpha="0.2" />
-
-                    <LinearLayout
-                        android:id="@+id/themeSelectionLayout"
+                        android:id="@+id/themeSettingsLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
@@ -161,6 +102,35 @@
                             android:textSize="14sp" />
                     </LinearLayout>
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/outline_variant"
+                        android:alpha="0.2" />
+
+                    <LinearLayout
+                        android:id="@+id/scheduledProtectionLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:orientation="vertical"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Scheduled Protection"
+                            android:textColor="@color/on_surface"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:id="@+id/currentScheduleText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Disabled"
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -198,13 +168,13 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Content Categories"
+                            android:text="Blocklist Sources"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Ads, Social, Gambling, etc."
+                            android:text="Manage URLs and local hosts files"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="14sp" />
                     </LinearLayout>
@@ -226,13 +196,13 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Rule Editor &amp; Search"
+                            android:text="Quick Rule Search"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Search and manually block/unblock"
+                            android:text="Search and whitelist domains from blocklist"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="14sp" />
                     </LinearLayout>
@@ -260,7 +230,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="View and edit allowed domains"
+                            android:text="View and remove allowed domains"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="14sp" />
                     </LinearLayout>
@@ -282,7 +252,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Update Frequency"
+                            android:text="Auto-Update Frequency"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
@@ -297,12 +267,88 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- DNS & Apps Section -->
+            <!-- Advanced Manual Editors -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="DNS &amp; Apps"
+                android:text="Advanced Manual Editors"
+                android:textColor="@color/primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/surface_container_low"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/manualWhitelistEditorLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:orientation="vertical"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Edit Whitelist File"
+                            android:textColor="@color/on_surface"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Directly edit whitelist_manual.txt"
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/outline_variant"
+                        android:alpha="0.2" />
+
+                    <LinearLayout
+                        android:id="@+id/manualRulesEditorLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:orientation="vertical"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Edit Custom Rules File"
+                            android:textColor="@color/on_surface"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Directly edit blacklist_custom.txt"
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Network & Apps -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Network &amp; Apps"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -331,7 +377,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Custom DNS Server"
+                            android:text="Upstream DNS Server"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
@@ -366,7 +412,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Find the fastest DNS provider"
+                            android:text="Test latency to find the fastest server"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="14sp" />
                     </LinearLayout>
