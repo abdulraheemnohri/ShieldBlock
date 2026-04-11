@@ -159,6 +159,34 @@
                         android:alpha="0.2" />
 
                     <LinearLayout
+                        android:id="@+id/dnsLatencyLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:orientation="vertical"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="DNS Benchmark"
+                            android:textColor="@color/on_surface"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Find the fastest DNS provider"
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/outline_variant"
+                        android:alpha="0.2" />
+
+                    <LinearLayout
                         android:id="@+id/manageWhitelistLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -244,7 +272,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="Advanced"
+                android:text="Advanced &amp; Maintenance"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -261,6 +289,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/updateBlocklistsButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:text="Force Blocklist Update"
+                        android:textColor="@color/primary"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/outline_variant"
+                        android:alpha="0.2" />
 
                     <TextView
                         android:id="@+id/exportSettingsButton"
@@ -285,6 +329,22 @@
                         android:padding="16dp"
                         android:text="Import Whitelist"
                         android:textColor="@color/on_surface"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/outline_variant"
+                        android:alpha="0.2" />
+
+                    <TextView
+                        android:id="@+id/resetAllButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:text="Reset to Factory Defaults"
+                        android:textColor="@color/tertiary"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true" />
 

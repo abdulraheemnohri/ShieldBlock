@@ -9,6 +9,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.shieldblock.data.StatsManager
 import com.example.shieldblock.data.WhitelistManager
 import com.example.shieldblock.data.BlacklistManager
@@ -53,10 +55,34 @@ class SettingsActivity : AppCompatActivity() {
         // Filtering
         updateDnsText()
         binding.dnsSettingsLayout.setOnClickListener { showDnsDialog() }
+        binding.dnsLatencyLayout.setOnClickListener {
+            startActivity(Intent(this, DnsLatencyActivity::class.java))
+        }
         binding.manageWhitelistLayout.setOnClickListener { showWhitelistDialog() }
         binding.manageBlacklistLayout.setOnClickListener { showBlacklistDialog() }
         binding.appExclusionLayout.setOnClickListener {
             startActivity(Intent(this, AppExclusionActivity::class.java))
+        }
+
+        // Maintenance
+        binding.updateBlocklistsButton.setOnClickListener {
+            val updateWork = OneTimeWorkRequestBuilder<BlacklistWorker>().build()
+            WorkManager.getInstance(this).enqueue(updateWork)
+            Toast.makeText(this, "Update started in background", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.resetAllButton.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Reset Everything?")
+                .setMessage("This will clear all stats, whitelist, and custom sources.")
+                .setPositiveButton("Reset") { _, _ ->
+                    prefs.edit().clear().apply()
+                    statsManager.resetStats()
+                    Toast.makeText(this, "App reset. Please restart.", Toast.LENGTH_LONG).show()
+                    finishAffinity()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
 
         // Support
