@@ -50,6 +50,7 @@
         <activity android:name=".SettingsActivity" android:label="Settings" />
         <activity android:name=".LogActivity" android:label="Activity Logs" />
         <activity android:name=".AppExclusionActivity" android:label="App Exclusion" />
+        <activity android:name=".DnsLatencyActivity" android:label="DNS Benchmark" />
 
     </application>
 

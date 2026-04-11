@@ -54,7 +54,7 @@ class DnsProxy(
 
             while (!Thread.interrupted()) {
                 buffer.clear()
-                val length = inputStream.read(buffer.array())
+                val length = try { inputStream.read(buffer.array()) } catch(e: Exception) { -1 }
                 if (length > 0) {
                     buffer.limit(length)
                     handlePacket(buffer, socket, outputStream)
@@ -73,9 +73,8 @@ class DnsProxy(
         socket: DatagramSocket,
         outputStream: FileOutputStream
     ) {
-        if (buffer.limit() < 28) return // Too small for IP+UDP
+        if (buffer.limit() < 28) return
 
-        // Simple IPv4 Check (Version = 4, Protocol = 17 for UDP)
         val version = (buffer.get(0).toInt() shr 4) and 0x0F
         val protocol = buffer.get(9).toInt() and 0xFF
         if (version != 4 || protocol != 17) return
@@ -89,7 +88,7 @@ class DnsProxy(
         val sourcePort = buffer.getShort(20).toInt() and 0xFFFF
         val destPort = buffer.getShort(22).toInt() and 0xFFFF
 
-        if (destPort != 53) return // Only handle DNS
+        if (destPort != 53) return
 
         val dnsDataSize = (buffer.getShort(24).toInt() and 0xFFFF) - 8
         if (dnsDataSize <= 0) return
@@ -107,6 +106,7 @@ class DnsProxy(
 
         if (isBlacklisted(domain)) {
             statsManager.incrementBlockedAds()
+            statsManager.logBlockedDomain(domain)
             eventLogger.logEvent("Blocked: $domain")
             val nxResponse = createNxDomainResponse(dnsData)
             sendResponse(nxResponse, outputStream, destIP, 53, sourceIP, sourcePort)
@@ -151,21 +151,18 @@ class DnsProxy(
         val packet = ByteBuffer.allocate(totalLen)
         packet.order(ByteOrder.BIG_ENDIAN)
 
-        // IP Header
         packet.put(0, 0x45.toByte())
         packet.putShort(2, totalLen.toShort())
-        packet.put(9, 17.toByte()) // UDP
+        packet.put(9, 17.toByte())
         packet.position(12)
         packet.put(srcIp)
         packet.put(dstIp)
 
-        // UDP Header
         packet.position(20)
         packet.putShort(srcPort.toShort())
         packet.putShort(dstPort.toShort())
         packet.putShort(24, (8 + dnsResponse.size).toShort())
 
-        // DNS Data
         packet.position(28)
         packet.put(dnsResponse)
 
@@ -206,8 +203,8 @@ class DnsProxy(
     private fun createNxDomainResponse(query: ByteArray): ByteArray {
         val response = query.copyOf()
         if (response.size < 4) return response
-        response[2] = (response[2].toInt() or 0x81).toByte() // Response + Recursion Desired
-        response[3] = (response[3].toInt() or 0x83).toByte() // Recursion Avail + NXDOMAIN
+        response[2] = (response[2].toInt() or 0x81).toByte()
+        response[3] = (response[3].toInt() or 0x83).toByte()
         return response
     }
 }
