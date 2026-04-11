@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/surface"
-        app:title="Apps Management"
+        app:title="Rule Editor"
         app:titleTextColor="@color/on_surface" />
 
     <com.google.android.material.textfield.TextInputLayout
@@ -23,10 +23,10 @@
         app:endIconMode="clear_text">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/searchAppEditText"
+            android:id="@+id/searchRuleEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search installed apps..."
+            android:hint="Search active blacklist..."
             android:textColor="@color/on_surface" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -38,43 +38,28 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/showSystemAppsChip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="System Apps"
-            android:checkable="true"
-            app:chipSurfaceColor="@color/surface_container_low"
-            android:textSize="10sp" />
-
-        <View
+        <TextView
+            android:id="@+id/resultCountText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/sortBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sort"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:textSize="12sp"
-            app:icon="@android:drawable/ic_menu_sort_by_size" />
-
-        <Button
-            android:id="@+id/selectAllBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="All"
-            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_weight="1"
+            android:text="0 domains found"
+            android:textColor="@color/on_surface_variant"
             android:textSize="12sp" />
 
+        <Button
+            android:id="@+id/addCustomRuleBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Pattern"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/appRecyclerView"
+        android:id="@+id/ruleRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp" />
+        android:layout_marginTop="8dp" />
 
 </LinearLayout>

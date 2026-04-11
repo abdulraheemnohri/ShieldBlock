@@ -4,6 +4,7 @@ import android.net.VpnService
 import androidx.preference.PreferenceManager
 import android.util.Log
 import com.example.shieldblock.data.StatsManager
+import com.example.shieldblock.data.FilterManager
 import com.example.shieldblock.analytics.EventLogger
 import java.io.FileDescriptor
 import java.io.FileInputStream
@@ -20,9 +21,16 @@ class DnsProxy(
 ) : Runnable {
     private val blacklist = mutableSetOf<String>()
     private val whitelist = mutableSetOf<String>()
+    private val customRules = mutableSetOf<String>()
     private val statsManager = StatsManager(service)
+    private val filterManager = FilterManager(service)
     private val eventLogger = EventLogger(service)
     private var customDnsServer: String = "8.8.8.8"
+
+    private var totalBytesRead = 0L
+    private var totalBytesWritten = 0L
+
+    fun getTrafficStats(): Pair<Long, Long> = totalBytesRead to totalBytesWritten
 
     fun updateBlacklist(newList: Collection<String>) {
         synchronized(blacklist) {
@@ -38,11 +46,19 @@ class DnsProxy(
         }
     }
 
+    fun updateCustomRules(newList: Set<String>) {
+        synchronized(customRules) {
+            customRules.clear()
+            customRules.addAll(newList)
+        }
+    }
+
     override fun run() {
         var socket: DatagramSocket? = null
         try {
             val prefs = PreferenceManager.getDefaultSharedPreferences(service)
             customDnsServer = prefs.getString("custom_dns", "8.8.8.8") ?: "8.8.8.8"
+            updateCustomRules(filterManager.getCustomRules())
 
             socket = DatagramSocket()
             service.protect(socket)
@@ -56,6 +72,7 @@ class DnsProxy(
                 buffer.clear()
                 val length = try { inputStream.read(buffer.array()) } catch(e: Exception) { -1 }
                 if (length > 0) {
+                    totalBytesRead += length
                     buffer.limit(length)
                     handlePacket(buffer, socket, outputStream)
                 }
@@ -100,17 +117,19 @@ class DnsProxy(
         val domain = parseDomainName(dnsData) ?: "unknown"
 
         if (isWhitelisted(domain)) {
+            statsManager.incrementSafeQueries()
             forwardDns(dnsData, socket, outputStream, sourceIP, sourcePort, destIP)
             return
         }
 
-        if (isBlacklisted(domain)) {
+        if (isBlacklisted(domain) || matchesCustomRules(domain)) {
             statsManager.incrementBlockedAds()
             statsManager.logBlockedDomain(domain)
             eventLogger.logEvent("Blocked: $domain")
             val nxResponse = createNxDomainResponse(dnsData)
             sendResponse(nxResponse, outputStream, destIP, 53, sourceIP, sourcePort)
         } else {
+            statsManager.incrementSafeQueries()
             forwardDns(dnsData, socket, outputStream, sourceIP, sourcePort, destIP)
         }
     }
@@ -166,7 +185,9 @@ class DnsProxy(
         packet.position(28)
         packet.put(dnsResponse)
 
-        outputStream.write(packet.array())
+        val data = packet.array()
+        outputStream.write(data)
+        totalBytesWritten += data.size
     }
 
     private fun isWhitelisted(domain: String): Boolean {
@@ -178,6 +199,24 @@ class DnsProxy(
     private fun isBlacklisted(domain: String): Boolean {
         synchronized(blacklist) {
             return blacklist.contains(domain) || blacklist.any { domain.endsWith(".$it") }
+        }
+    }
+
+    private fun matchesCustomRules(domain: String): Boolean {
+        synchronized(customRules) {
+            return customRules.any { rule ->
+                try {
+                    if (rule.contains("*")) {
+                        val regexStr = rule.replace(".", "\\.").replace("*", ".*")
+                        val regex = regexStr.toRegex(RegexOption.IGNORE_CASE)
+                        regex.matches(domain)
+                    } else {
+                        domain.contains(rule, ignoreCase = true)
+                    }
+                } catch (e: Exception) {
+                    false
+                }
+            }
         }
     }
 

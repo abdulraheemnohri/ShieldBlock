@@ -1,5 +1,6 @@
 package com.example.shieldblock
 
+import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,8 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import com.example.shieldblock.data.StatsManager
 import com.example.shieldblock.data.WhitelistManager
 import com.example.shieldblock.data.BlacklistManager
@@ -18,6 +18,8 @@ import com.example.shieldblock.data.FilterManager
 import com.example.shieldblock.databinding.SettingsActivityBinding
 import com.example.shieldblock.databinding.DialogAddSourceBinding
 import com.example.shieldblock.analytics.EventLogger
+import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 
 class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: SettingsActivityBinding
@@ -25,7 +27,6 @@ class SettingsActivity : AppCompatActivity() {
     private val whitelistManager by lazy { WhitelistManager(this) }
     private val blacklistManager by lazy { BlacklistManager(this) }
     private val filterManager by lazy { FilterManager(this) }
-    private val eventLogger by lazy { EventLogger(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,24 +53,44 @@ class SettingsActivity : AppCompatActivity() {
         binding.themeSelectionLayout.setOnClickListener { showThemeDialog() }
         updateThemeText()
 
+        binding.performanceProfileLayout.setOnClickListener { showPerformanceProfileDialog() }
+        updatePerformanceProfileText()
+
+        binding.scheduledProtectionLayout.setOnClickListener { showScheduleDialog() }
+        updateScheduleText()
+
         // Filtering
+        binding.manageBlacklistLayout.setOnClickListener { showBlacklistDialog() }
+        binding.ruleEditorLayout.setOnClickListener {
+            startActivity(Intent(this, RuleEditorActivity::class.java))
+        }
+        binding.manageWhitelistLayout.setOnClickListener {
+            startActivity(Intent(this, WhitelistActivity::class.java))
+        }
+        binding.updateFrequencyLayout.setOnClickListener { showUpdateFrequencyDialog() }
+        updateFrequencyText()
+
+        // DNS & Apps
         updateDnsText()
-        binding.dnsSettingsLayout.setOnClickListener { showDnsDialog() }
+        binding.dnsSettingsLayout.setOnClickListener { showDnsProfileDialog() }
         binding.dnsLatencyLayout.setOnClickListener {
             startActivity(Intent(this, DnsLatencyActivity::class.java))
         }
-        binding.manageWhitelistLayout.setOnClickListener { showWhitelistDialog() }
-        binding.manageBlacklistLayout.setOnClickListener { showBlacklistDialog() }
         binding.appExclusionLayout.setOnClickListener {
             startActivity(Intent(this, AppExclusionActivity::class.java))
         }
+        binding.networkRulesLayout.setOnClickListener {
+            startActivity(Intent(this, NetworkRulesActivity::class.java))
+        }
 
         // Maintenance
+        updateLastUpdateText()
         binding.updateBlocklistsButton.setOnClickListener {
             val updateWork = OneTimeWorkRequestBuilder<BlacklistWorker>().build()
             WorkManager.getInstance(this).enqueue(updateWork)
             Toast.makeText(this, "Update started in background", Toast.LENGTH_SHORT).show()
         }
+        binding.backupConfigLayout.setOnClickListener { showBackupRestoreDialog() }
 
         binding.resetAllButton.setOnClickListener {
             AlertDialog.Builder(this)
@@ -86,25 +107,203 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // Support
-        binding.resetStatsButton.setOnClickListener {
-            statsManager.resetStats()
-            Toast.makeText(this, "Stats reset", Toast.LENGTH_SHORT).show()
-        }
         binding.viewLogsButton.setOnClickListener {
             startActivity(Intent(this, LogActivity::class.java))
         }
-        binding.clearLogsButton.setOnClickListener {
-            eventLogger.clearLogs()
-            Toast.makeText(this, "Logs cleared", Toast.LENGTH_SHORT).show()
+        binding.aboutButton.setOnClickListener {
+            startActivity(Intent(this, AboutActivity::class.java))
         }
+    }
 
-        binding.exportSettingsButton.setOnClickListener { exportWhitelist() }
-        binding.importSettingsButton.setOnClickListener { importWhitelist() }
+    private fun showScheduleDialog() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val options = arrayOf("Enabled", "Disabled", "Set Start Time", "Set End Time")
+        AlertDialog.Builder(this)
+            .setTitle("Scheduled Protection")
+            .setItems(options) { _, which ->
+                when(which) {
+                    0 -> { prefs.edit().putBoolean("scheduled_enabled", true).apply(); updateScheduleText() }
+                    1 -> { prefs.edit().putBoolean("scheduled_enabled", false).apply(); updateScheduleText() }
+                    2 -> showTimePicker("scheduled_start")
+                    3 -> showTimePicker("scheduled_end")
+                }
+            }.show()
+    }
+
+    private fun showTimePicker(key: String) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        TimePickerDialog(this, { _, h, m ->
+            prefs.edit().putString(key, String.format("%02d:%02d", h, m)).apply()
+            updateScheduleText()
+        }, 0, 0, true).show()
+    }
+
+    private fun updateScheduleText() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val enabled = prefs.getBoolean("scheduled_enabled", false)
+        if (!enabled) {
+            binding.currentScheduleText.text = "Disabled"
+        } else {
+            val start = prefs.getString("scheduled_start", "00:00")
+            val end = prefs.getString("scheduled_end", "00:00")
+            binding.currentScheduleText.text = "Active between $start - $end"
+        }
+    }
+
+    private fun showPerformanceProfileDialog() {
+        val options = arrayOf("Performance (Real-time stats)", "Balanced (Every 5s)", "Battery Saver (Manual only)")
+        val values = arrayOf("performance", "balanced", "battery_saver")
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val current = prefs.getString("perf_profile", "balanced")
+        val checked = values.indexOf(current)
+
+        AlertDialog.Builder(this)
+            .setTitle("Performance Profile")
+            .setSingleChoiceItems(options, checked) { dialog, which ->
+                val selected = values[which]
+                prefs.edit().putString("perf_profile", selected).apply()
+                updatePerformanceProfileText()
+                dialog.dismiss()
+            }.show()
+    }
+
+    private fun updatePerformanceProfileText() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val current = prefs.getString("perf_profile", "balanced")
+        binding.currentProfileText.text = current?.replace("_", " ")?.replaceFirstChar { it.uppercase() }
+    }
+
+    private fun showUpdateFrequencyDialog() {
+        val options = arrayOf("Every 12 hours", "Every 24 hours", "Every 48 hours")
+        val values = intArrayOf(12, 24, 48)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val current = prefs.getInt("update_frequency", 24)
+        val checked = values.indexOf(current)
+
+        AlertDialog.Builder(this)
+            .setTitle("Update Frequency")
+            .setSingleChoiceItems(options, checked) { dialog, which ->
+                val freq = values[which]
+                prefs.edit().putInt("update_frequency", freq).apply()
+                scheduleWork(freq)
+                updateFrequencyText()
+                dialog.dismiss()
+            }.show()
+    }
+
+    private fun scheduleWork(hours: Int) {
+        val work = PeriodicWorkRequestBuilder<BlacklistWorker>(hours.toLong(), TimeUnit.HOURS).build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "blacklist_update",
+            ExistingPeriodicWorkPolicy.REPLACE,
+            work
+        )
+    }
+
+    private fun updateFrequencyText() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val current = prefs.getInt("update_frequency", 24)
+        binding.currentFrequencyText.text = "Every $current hours"
+    }
+
+    private fun showBackupRestoreDialog() {
+        val options = arrayOf("Export Config", "Import Config")
+        AlertDialog.Builder(this)
+            .setTitle("Backup & Restore")
+            .setItems(options) { _, which ->
+                if (which == 0) exportConfig() else importConfig()
+            }.show()
+    }
+
+    private fun exportConfig() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val all = prefs.all
+        val json = JSONObject(all)
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/json"
+            putExtra(Intent.EXTRA_TEXT, json.toString(4))
+            putExtra(Intent.EXTRA_SUBJECT, "ShieldBlock Config Backup")
+        }
+        startActivity(Intent.createChooser(intent, "Export Config"))
+    }
+
+    private fun importConfig() {
+        val input = EditText(this)
+        input.hint = "Paste JSON config here"
+        AlertDialog.Builder(this)
+            .setTitle("Import Config")
+            .setView(input)
+            .setPositiveButton("Import") { _, _ ->
+                try {
+                    val json = JSONObject(input.text.toString())
+                    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+                    val editor = prefs.edit()
+                    val keys = json.keys()
+                    while (keys.hasNext()) {
+                        val key = keys.next()
+                        when (val value = json.get(key)) {
+                            is Boolean -> editor.putBoolean(key, value)
+                            is String -> editor.putString(key, value)
+                            is Int -> editor.putInt(key, value)
+                        }
+                    }
+                    editor.apply()
+                    Toast.makeText(this, "Config imported. Restart recommended.", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Invalid JSON config", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun updateDnsText() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         binding.currentDnsText.text = prefs.getString("custom_dns", "8.8.8.8")
+    }
+
+    private fun updateLastUpdateText() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val last = prefs.getString("last_blacklist_update", "Never")
+        binding.lastUpdateText.text = "Last updated: $last"
+    }
+
+    private fun showDnsProfileDialog() {
+        val profiles = filterManager.dnsProfiles
+        val names = (profiles.map { "${it.name} (${it.primaryDns})" } + "Manual Input").toTypedArray()
+
+        AlertDialog.Builder(this)
+            .setTitle("Select DNS Profile")
+            .setItems(names) { _, which ->
+                if (which < profiles.size) {
+                    val selected = profiles[which]
+                    PreferenceManager.getDefaultSharedPreferences(this)
+                        .edit().putString("custom_dns", selected.primaryDns).apply()
+                    updateDnsText()
+                    Toast.makeText(this, "${selected.name} applied", Toast.LENGTH_SHORT).show()
+                } else {
+                    showManualDnsDialog()
+                }
+            }
+            .show()
+    }
+
+    private fun showManualDnsDialog() {
+        val input = EditText(this)
+        input.setText(binding.currentDnsText.text)
+        AlertDialog.Builder(this)
+            .setTitle("Manual DNS Input")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val dns = input.text.toString().trim()
+                if (dns.isNotEmpty()) {
+                    PreferenceManager.getDefaultSharedPreferences(this)
+                        .edit().putString("custom_dns", dns).apply()
+                    updateDnsText()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun updateThemeText() {
@@ -140,55 +339,18 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun showDnsDialog() {
-        val input = EditText(this)
-        input.setText(binding.currentDnsText.text)
-
-        AlertDialog.Builder(this)
-            .setTitle("Custom DNS Server")
-            .setMessage("Enter the IP address of your preferred DNS server (e.g., 1.1.1.1)")
-            .setView(input)
-            .setPositiveButton("Save") { _, _ ->
-                val dns = input.text.toString().trim()
-                if (dns.isNotEmpty()) {
-                    PreferenceManager.getDefaultSharedPreferences(this)
-                        .edit().putString("custom_dns", dns).apply()
-                    updateDnsText()
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun showWhitelistDialog() {
-        val domains = whitelistManager.getWhitelist().toList()
-        if (domains.isEmpty()) {
-            Toast.makeText(this, "Whitelist is empty", Toast.LENGTH_SHORT).show()
-            return
-        }
-        AlertDialog.Builder(this)
-            .setTitle("Manage Whitelist")
-            .setItems(domains.toTypedArray()) { _, which ->
-                val domain = domains[which]
-                whitelistManager.removeFromWhitelist(domain)
-                Toast.makeText(this, " removed", Toast.LENGTH_SHORT).show()
-            }
-            .setPositiveButton("Close", null)
-            .show()
-    }
-
     private fun showBlacklistDialog() {
         val allSources = filterManager.getAllSources()
-        val names = allSources.map { it.name }.toTypedArray()
+        val names = allSources.map { "${it.name} (${it.category})" }.toTypedArray()
         val enabledIds = filterManager.getEnabledFilterIds()
         val checkedItems = allSources.map { enabledIds.contains(it.id) }.toBooleanArray()
 
         AlertDialog.Builder(this)
-            .setTitle("Blocklist Sources")
+            .setTitle("Blocklist Categories")
             .setMultiChoiceItems(names, checkedItems) { _, which, isChecked ->
                 filterManager.setFilterEnabled(allSources[which].id, isChecked)
             }
-            .setPositiveButton("Add Source") { _, _ -> showAddSourceDialog() }
+            .setPositiveButton("Add Custom") { _, _ -> showAddSourceDialog() }
             .setNeutralButton("Done", null)
             .show()
     }
@@ -204,33 +366,6 @@ class SettingsActivity : AppCompatActivity() {
                     filterManager.addCustomSource(name, url)
                     Toast.makeText(this, "Source added", Toast.LENGTH_SHORT).show()
                 }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun exportWhitelist() {
-        val domains = whitelistManager.getWhitelist().joinToString("\n")
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, domains)
-            putExtra(Intent.EXTRA_SUBJECT, "ShieldBlock Whitelist Export")
-        }
-        startActivity(Intent.createChooser(intent, "Export Whitelist"))
-    }
-
-    private fun importWhitelist() {
-        val input = EditText(this)
-        input.hint = "Paste domains, one per line"
-        AlertDialog.Builder(this)
-            .setTitle("Import Whitelist")
-            .setView(input)
-            .setPositiveButton("Import") { _, _ ->
-                val text = input.text.toString()
-                text.lines().filter { it.isNotBlank() }.forEach {
-                    whitelistManager.addToWhitelist(it.trim())
-                }
-                Toast.makeText(this, "Import complete", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
             .show()

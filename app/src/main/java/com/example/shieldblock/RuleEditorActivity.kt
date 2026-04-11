@@ -1,0 +1,114 @@
+package com.example.shieldblock
+
+import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.shieldblock.data.BlacklistManager
+import com.example.shieldblock.data.WhitelistManager
+import com.example.shieldblock.data.FilterManager
+import com.example.shieldblock.databinding.ActivityRuleEditorBinding
+import com.example.shieldblock.databinding.ItemRuleBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+class RuleEditorActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityRuleEditorBinding
+    private val blacklistManager by lazy { BlacklistManager(this) }
+    private val whitelistManager by lazy { WhitelistManager(this) }
+    private val filterManager by lazy { FilterManager(this) }
+    private var allDomains: List<String> = emptyList()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityRuleEditorBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.setNavigationOnClickListener { finish() }
+
+        binding.ruleRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        lifecycleScope.launch {
+            allDomains = withContext(Dispatchers.IO) {
+                blacklistManager.loadLocalBlacklist()
+            }
+            binding.resultCountText.text = "${allDomains.size} domains in blacklist"
+        }
+
+        binding.searchRuleEditText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val query = s.toString().trim()
+                if (query.length >= 3) {
+                    filterDomains(query)
+                } else if (query.isEmpty()) {
+                    binding.resultCountText.text = "${allDomains.size} domains in blacklist"
+                    binding.ruleRecyclerView.adapter = null
+                } else {
+                    binding.ruleRecyclerView.adapter = null
+                    binding.resultCountText.text = "Type 3+ characters to search"
+                }
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
+        binding.addCustomRuleBtn.setOnClickListener { showAddCustomRuleDialog() }
+    }
+
+    private fun filterDomains(query: String) {
+        val filtered = allDomains.filter { it.contains(query, ignoreCase = true) }.take(100)
+        binding.resultCountText.text = "${filtered.size} results (showing top 100)"
+        binding.ruleRecyclerView.adapter = RuleAdapter(filtered) { domain ->
+            whitelistManager.addToWhitelist(domain)
+            Toast.makeText(this, "$domain added to whitelist", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showAddCustomRuleDialog() {
+        val input = EditText(this)
+        input.hint = "e.g. *.malicious-site.com"
+        AlertDialog.Builder(this)
+            .setTitle("Add Blocking Rule")
+            .setMessage("Enter a domain pattern or keyword to block.")
+            .setView(input)
+            .setPositiveButton("Block") { _, _ ->
+                val rule = input.text.toString().trim()
+                if (rule.isNotEmpty()) {
+                    filterManager.addCustomRule(rule)
+                    Toast.makeText(this, "Rule added", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    class RuleAdapter(private val domains: List<String>, val onAllow: (String) -> Unit) :
+        RecyclerView.Adapter<RuleAdapter.ViewHolder>() {
+
+        class ViewHolder(val binding: ItemRuleBinding) : RecyclerView.ViewHolder(binding.root)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val binding = ItemRuleBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            return ViewHolder(binding)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val domain = domains[position]
+            holder.binding.domainText.text = domain
+            holder.binding.whitelistActionBtn.setOnClickListener { onAllow(domain) }
+        }
+
+        override fun getItemCount() = domains.size
+    }
+}

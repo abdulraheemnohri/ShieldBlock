@@ -9,23 +9,44 @@ data class FilterSource(
     val id: String,
     val name: String,
     val url: String,
-    var enabled: Boolean = true
+    var enabled: Boolean = true,
+    val category: String = "General"
 )
 
-class FilterManager(context: Context) {
+data class DnsProfile(
+    val name: String,
+    val primaryDns: String,
+    val description: String
+)
+
+class FilterManager(private val context: Context) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
     private val enabledFiltersKey = "enabled_filters"
     private val customRulesKey = "custom_blocking_rules"
     private val customSourcesKey = "custom_filter_sources"
 
     val defaultFilters = listOf(
-        FilterSource("ads", "Standard Adblock", "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"),
-        FilterSource("social", "Social Media Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social/hosts"),
-        FilterSource("fakenews", "Fake News Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts")
+        FilterSource("ads", "Standard Adblock", "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts", category = "Privacy"),
+        FilterSource("social", "Social Media Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social/hosts", category = "Privacy"),
+        FilterSource("fakenews", "Fake News Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts", category = "Security"),
+        FilterSource("gambling", "Gambling Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling/hosts", category = "Content"),
+        FilterSource("porn", "Adult Content Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn/hosts", category = "Family"),
+        FilterSource("crypto", "Crypto/Mining Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-social/hosts", category = "Security"),
+        // Regional
+        FilterSource("eu", "EU Regional Filters", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social/hosts", category = "Regional"),
+        FilterSource("asia", "Asia Regional Filters", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts", category = "Regional")
+    )
+
+    val dnsProfiles = listOf(
+        DnsProfile("Google DNS", "8.8.8.8", "Fast and reliable, global coverage."),
+        DnsProfile("Cloudflare", "1.1.1.1", "Privacy-focused, very fast."),
+        DnsProfile("AdGuard DNS", "94.140.14.14", "Built-in ad and tracker blocking."),
+        DnsProfile("CleanBrowsing", "185.228.168.168", "Family-safe, blocks adult content."),
+        DnsProfile("Quad9", "9.9.9.9", "Security-focused, blocks malicious sites.")
     )
 
     fun getEnabledFilterIds(): Set<String> {
-        return prefs.getStringSet(enabledFiltersKey, defaultFilters.map { it.id }.toSet()) ?: emptySet()
+        return prefs.getStringSet(enabledFiltersKey, setOf("ads")) ?: setOf("ads")
     }
 
     fun setFilterEnabled(id: String, enabled: Boolean) {
@@ -44,7 +65,7 @@ class FilterManager(context: Context) {
                 obj.getString("id"),
                 obj.getString("name"),
                 obj.getString("url"),
-                true // We'll manage enable/disable via enabledFiltersKey
+                category = "Custom"
             ))
         }
         return list
