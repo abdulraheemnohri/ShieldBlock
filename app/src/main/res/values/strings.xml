@@ -16,4 +16,6 @@
     <string name="logs">Logs</string>
     <string name="clear_logs">Clear Logs</string>
     <string name="view_logs">View Logs</string>
+    <string name="reset_stats">Reset Stats</string>
+    <string name="manage_whitelist">Manage Whitelist</string>
 </resources>

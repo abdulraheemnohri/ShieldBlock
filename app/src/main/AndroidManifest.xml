@@ -19,7 +19,8 @@
         <service
             android:name=".vpn.MyVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
 
         <receiver android:name=".BootCompleteReceiver" android:enabled="true" android:exported="true">
             <intent-filter>
@@ -36,7 +37,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".SettingsActivity" />
+        <activity android:name=".SettingsActivity" android:label="Settings" />
+        <activity android:name=".LogActivity" android:label="Activity Logs" />
 
     </application>
 
