@@ -8,6 +8,8 @@ import android.os.Looper
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.preference.PreferenceManager
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.shieldblock.data.StatsManager
@@ -30,11 +32,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Apply saved theme before inflation
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        applyTheme(prefs.getString("app_theme", "system") ?: "system")
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Initial UI State
-        updateVpnUi(false)
+        updateVpnUi(VpnService.prepare(this) == null)
         updateStats()
 
         // VPN Control Buttons
@@ -46,7 +53,7 @@ class MainActivity : AppCompatActivity() {
             val domain = binding.whitelistEditText.text.toString()
             if (domain.isNotBlank()) {
                 whitelistManager.addToWhitelist(domain)
-                Toast.makeText(this, "$domain added to whitelist", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, " added to whitelist", Toast.LENGTH_SHORT).show()
                 binding.whitelistEditText.text?.clear()
             }
         }
@@ -63,9 +70,18 @@ class MainActivity : AppCompatActivity() {
         WorkManager.getInstance(this).enqueue(blacklistWork)
     }
 
+    private fun applyTheme(theme: String) {
+        when (theme) {
+            "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         handler.post(updateStatsRunnable)
+        updateVpnUi(VpnService.prepare(this) == null)
     }
 
     override fun onPause() {

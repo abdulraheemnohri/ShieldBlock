@@ -28,6 +28,16 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".ShieldBlockWidget" android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="TOGGLE_VPN" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info" />
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -39,6 +49,7 @@
 
         <activity android:name=".SettingsActivity" android:label="Settings" />
         <activity android:name=".LogActivity" android:label="Activity Logs" />
+        <activity android:name=".AppExclusionActivity" android:label="App Exclusion" />
 
     </application>
 

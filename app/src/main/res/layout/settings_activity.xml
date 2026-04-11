@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -7,15 +8,15 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/background">
+        android:background="@color/background"
+        app:elevation="0dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="Features &amp; Settings"
-            app:titleTextColor="@color/on_background" />
-
+            app:title="Settings"
+            app:titleTextColor="@color/on_surface" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -27,13 +28,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="20dp">
 
-            <!-- General Section -->
+            <!-- Automation & Appearance -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Automation &amp; Alerts"
+                android:text="Automation &amp; Appearance"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -49,8 +50,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="8dp">
+                    android:orientation="vertical">
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/autoStartSwitch"
@@ -73,6 +73,35 @@
                         android:padding="16dp"
                         android:text="Show notifications"
                         android:textColor="@color/on_surface" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/outline_variant"
+                        android:alpha="0.2" />
+
+                    <LinearLayout
+                        android:id="@+id/themeSelectionLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:orientation="vertical"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="App Theme"
+                            android:textColor="@color/on_surface"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:id="@+id/currentThemeText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="System Default"
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="14sp" />
+                    </LinearLayout>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -168,16 +197,96 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Advanced Blocking Rules"
+                            android:text="Blocklist Sources"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Custom filters and manual blocks"
+                            android:text="Default and custom hosts files"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="14sp" />
                     </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/outline_variant"
+                        android:alpha="0.2" />
+
+                    <LinearLayout
+                        android:id="@+id/appExclusionLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:orientation="vertical"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="App Exclusion (Split Tunneling)"
+                            android:textColor="@color/on_surface"
+                            android:textSize="16sp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Exclude specific apps from VPN"
+                            android:textColor="@color/on_surface_variant"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Advanced Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Advanced"
+                android:textColor="@color/primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/surface_container_low"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/exportSettingsButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:text="Export Whitelist"
+                        android:textColor="@color/on_surface"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/outline_variant"
+                        android:alpha="0.2" />
+
+                    <TextView
+                        android:id="@+id/importSettingsButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:text="Import Whitelist"
+                        android:textColor="@color/on_surface"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
