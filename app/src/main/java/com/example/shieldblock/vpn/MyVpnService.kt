@@ -9,6 +9,7 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import androidx.core.app.NotificationCompat
+import androidx.preference.PreferenceManager
 import com.example.shieldblock.MainActivity
 import com.example.shieldblock.R
 import com.example.shieldblock.data.BlacklistManager
@@ -44,6 +45,8 @@ class MyVpnService : VpnService() {
 
     private fun startVpn() {
         setupVpn()
+        if (vpnInterface == null) return
+
         dnsProxy = DnsProxy(vpnInterface!!.fileDescriptor, this)
         dnsProxy.updateBlacklist(blacklistManager.loadLocalBlacklist())
         dnsProxy.updateWhitelist(whitelistManager.getWhitelist())
@@ -59,6 +62,18 @@ class MyVpnService : VpnService() {
         builder.addAddress("10.0.0.2", 24)
         builder.addDnsServer("8.8.8.8")
         builder.addRoute("0.0.0.0", 0)
+
+        // Split Tunneling (App Exclusion)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val excludedApps = prefs.getStringSet("excluded_apps", emptySet()) ?: emptySet()
+        excludedApps.forEach {
+            try {
+                builder.addDisallowedApplication(it)
+            } catch (e: Exception) {
+                // App might have been uninstalled
+            }
+        }
+
         vpnInterface = builder.establish()
     }
 
@@ -92,6 +107,7 @@ class MyVpnService : VpnService() {
     private fun stopVpn() {
         dnsProxyJob?.cancel()
         vpnInterface?.close()
+        vpnInterface = null
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
