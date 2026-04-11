@@ -1,40 +1,45 @@
-# ShieldBlock - Advanced DNS Firewall & VPN
+# ShieldBlock - Ultra DNS Firewall & VPN
 
-ShieldBlock is a powerful, privacy-focused Android application that acts as a local VPN to intercept and filter DNS requests. It effectively blocks ads, trackers, social media widgets, and malicious domains system-wide.
+ShieldBlock is the ultimate, privacy-focused Android application that acts as a local VPN to intercept and filter DNS requests. It provides total control over your device's network traffic, blocking ads, trackers, malicious content, and more.
 
-## 🚀 Key Features
+## 🚀 Ultra Feature Set
 
-### 🛡️ System-Wide Protection
-- **Local VPN Interception**: Blocks ads and trackers across all your apps using a high-performance local DNS proxy.
-- **NXDOMAIN Blocking**: Instantly drops requests to blacklisted domains, saving data and improving battery life.
-- **Real-time Statistics**: Live dashboard tracking blocked requests and estimated data savings.
+### 🛡️ Core Protection & Intelligence
+- **Local VPN Engine**: High-performance packet interception using the VpnService API.
+- **Privacy Score & Grade**: Real-time assessment of your device's protection level (A+ to D).
+- **Advanced DNS Proxy**: Supports standard blacklists, NXDOMAIN responses, and **Regex/Wildcard pattern matching**.
+- **Security Audit**: Identifies high-risk apps on your device that generate excessive tracker traffic.
 
-### ⚙️ Filtering & Customization
-- **Multiple Blocklists**: Choose from standard Adblock, Social Media blockers, and Fake News filters.
-- **Custom Sources**: Add your own hosts file URLs (raw text) to expand your protection.
-- **Whitelist Management**: Easily allow specific domains that you trust or need.
-- **Import/Export**: Backup and restore your whitelist with simple text-based import/export.
+### ⚙️ Elite Filter Management
+- **Visual Rule Editor**: Search through hundreds of thousands of active blacklist entries and whitelist them instantly.
+- **Categorized & Regional Filtering**: Pre-configured elite lists for Privacy, Security, Family, and Regional (EU/Asia) content.
+- **Custom Blocking Patterns**: Manually add domain keywords or complex regex patterns.
+- **Full Config Backup**: Export/Import your entire setup as a portable JSON file.
 
-### 🌐 Advanced Network Tools
-- **Split Tunneling (App Exclusion)**: Exclude specific apps from the VPN tunnel to ensure compatibility with local network services or banking apps.
-- **DNS Benchmark**: Test the latency of popular DNS providers (Google, Cloudflare, AdGuard) to find the fastest one for your location.
-- **Custom DNS**: Set your own preferred DNS upstream server (e.g., 1.1.1.1 or 8.8.8.8).
+### 📱 Smart Apps & Network Management
+- **Split Tunneling (Ultra)**: Exclude specific apps and view **per-app blocking statistics**.
+- **Network-Specific Rules**: Auto-disable protection on trusted Wi-Fi SSIDs.
+- **System Apps Support**: Toggle visibility and management for core Android system processes.
+- **Quick Actions Row**: One-tap access to Benchmark, Apps, Logs, and Rules from the dashboard.
 
-### 🎨 Modern Experience
-- **Emerald Aegis Theme**: A sleek, Material 3 dark theme with fluid animations and pulse effects.
-- **Home Screen Widget**: Quick-toggle protection and view blocked stats without opening the app.
-- **Auto-Start**: Optionally start protection automatically when your device boots up.
-- **Detailed Logs**: Searchable activity log to monitor every intercepted request.
+### 🌐 Smart DNS & Performance
+- **DNS Profiles**: Quick-switch between Google, Cloudflare, AdGuard, CleanBrowsing, and Quad9.
+- **DNS Benchmark**: Integrated tool to find the lowest-latency DNS provider.
+- **Performance Profiles**: Choose between 'Performance', 'Balanced', or 'Battery Saver' tracking modes.
+- **Scheduled Protection**: Set daily start/end times for automatic firewall enforcement.
 
-## 🛠️ Technology Stack
-- **Kotlin**: Core application logic.
-- **VpnService API**: For local packet interception.
-- **WorkManager**: For periodic background blocklist updates.
-- **Material 3**: Modern, accessible UI components.
-- **OkHttp**: Efficient network requests for blocklist updates.
+### 📊 Comprehensive Analytics
+- **Visual Analytics**: 24-hour blocking trend charts and hourly breakdown.
+- **Live Activity Feed**: Real-time ticker of the most recently intercepted domains with detailed inspection.
+- **Network Speed Monitor**: Real-time throughput (KB/s) display on the dashboard.
+
+### 🎨 Premium Experience
+- **Emerald Aegis UI**: A stunning Material 3 dark theme with fluid entrance animations and status-responsive pulse effects.
+- **Quick Settings Tile**: Toggle protection directly from your system notification shade.
+- **Interactive Widget**: Home screen control with live stats.
 
 ## 📱 How It Works
-ShieldBlock establishes a local VPN tunnel on your device. Unlike traditional VPNs, it doesn't route your traffic to a remote server. Instead, it only intercepts DNS queries (UDP Port 53). Queries for blocked domains are answered with an 'NXDOMAIN' (non-existent domain) response locally, while safe queries are forwarded to your chosen DNS provider.
+ShieldBlock establishes a local VPN tunnel to intercept DNS queries (UDP Port 53). It answers queries for blocked domains locally, while safe queries are securely forwarded to your chosen DNS provider. This ensures zero-latency filtering without routing your private data through external servers.
 
 ---
-*ShieldBlock - Your data, your rules.*
+*ShieldBlock - Your device, your data, your rules.*

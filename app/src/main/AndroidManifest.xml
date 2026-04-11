@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -22,9 +24,26 @@
             android:foregroundServiceType="dataSync"
             android:exported="false" />
 
+        <service
+            android:name=".ShieldBlockTileService"
+            android:icon="@drawable/ic_launcher_foreground"
+            android:label="@string/quick_settings_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <receiver android:name=".BootCompleteReceiver" android:enabled="true" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".NetworkChangeReceiver" android:enabled="true" android:exported="true">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
 
@@ -49,8 +68,13 @@
 
         <activity android:name=".SettingsActivity" android:label="Settings" />
         <activity android:name=".LogActivity" android:label="Activity Logs" />
-        <activity android:name=".AppExclusionActivity" android:label="App Exclusion" />
+        <activity android:name=".AppExclusionActivity" android:label="Apps Management" />
         <activity android:name=".DnsLatencyActivity" android:label="DNS Benchmark" />
+        <activity android:name=".RuleEditorActivity" android:label="Rule Editor" />
+        <activity android:name=".WhitelistActivity" android:label="Whitelist" />
+        <activity android:name=".NetworkRulesActivity" android:label="Network Rules" />
+        <activity android:name=".AnalyticsActivity" android:label="Visual Analytics" />
+        <activity android:name=".AboutActivity" android:label="About &amp; Health" />
 
     </application>
 

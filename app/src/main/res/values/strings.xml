@@ -20,4 +20,6 @@
     <string name="manage_whitelist">Manage Whitelist</string>
     <string name="dns_latency_test">DNS Benchmark</string>
     <string name="scheduled_protection">Scheduled Protection</string>
+    <string name="quick_settings_label">ShieldBlock</string>
+    <string name="app_exclusion">Apps Management</string>
 </resources>

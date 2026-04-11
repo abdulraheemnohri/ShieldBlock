@@ -2,6 +2,7 @@ package com.example.shieldblock
 
 import android.content.Context
 import android.util.Log
+import androidx.preference.PreferenceManager
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.shieldblock.data.BlacklistManager
@@ -10,6 +11,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.*
 
 class BlacklistWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
@@ -20,7 +23,7 @@ class BlacklistWorker(appContext: Context, workerParams: WorkerParameters) :
         val client = OkHttpClient()
 
         val enabledIds = filterManager.getEnabledFilterIds()
-        val sourcesToFetch = filterManager.defaultFilters.filter { enabledIds.contains(it.id) }
+        val sourcesToFetch = filterManager.getAllSources().filter { enabledIds.contains(it.id) }
 
         val allHosts = mutableSetOf<String>()
 
@@ -47,6 +50,13 @@ class BlacklistWorker(appContext: Context, workerParams: WorkerParameters) :
 
         if (allHosts.isNotEmpty()) {
             blacklistManager.updateBlacklist(allHosts.toList())
+
+            // Save last update timestamp
+            val sdf = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
+            val timestamp = sdf.format(Date())
+            PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                .edit().putString("last_blacklist_update", timestamp).apply()
+
             Result.success()
         } else {
             Result.retry()
