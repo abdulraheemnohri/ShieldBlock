@@ -4,13 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:background="@color/surface_container_low">
+    android:padding="24dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add Blocklist Source"
+        android:text="@string/add_source_title"
         android:textColor="@color/on_surface"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -19,16 +18,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        app:boxStrokeColor="@color/outline"
-        app:hintTextColor="@color/primary">
-
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/sourceNameEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Source Name (e.g., My Extra Blocks)"
-            android:textColor="@color/on_surface"
+            android:hint="Source Name"
             android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -36,17 +31,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        app:boxStrokeColor="@color/outline"
-        app:hintTextColor="@color/primary">
-
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/sourceUrlEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Hosts URL (raw text file)"
-            android:textColor="@color/on_surface"
+            android:hint="URL or File Path"
             android:inputType="textUri" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/isWhitelistSwitch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/treat_as_whitelist" />
 
 </LinearLayout>

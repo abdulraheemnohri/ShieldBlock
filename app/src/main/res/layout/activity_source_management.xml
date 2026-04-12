@@ -7,88 +7,92 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/surface">
-        <androidx.appcompat.widget.Toolbar
+        android:layout_height="wrap_content">
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/blocklist_sources"
-            app:titleTextColor="@color/on_surface" />
+            app:title="@string/blocklist_sources" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginBottom="80dp"
+        android:padding="16dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
             android:orientation="horizontal">
-
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/addSourceBtn"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Add URL"
+                android:text="@string/add_url"
                 android:layout_marginEnd="8dp"
                 app:icon="@android:drawable/ic_menu_add" />
-
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/uploadFileBtn"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Upload File"
+                android:text="@string/upload_file"
                 style="@style/Widget.Material3.Button.TonalButton"
                 app:icon="@android:drawable/ic_menu_upload" />
         </LinearLayout>
 
-        <LinearLayout
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/selectAllBtn"
+            android:layout_marginTop="8dp"
+            android:scrollbars="none">
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/enable"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:textSize="12sp" />
-
-            <Button
-                android:id="@+id/selectNoneBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/disable"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:textSize="12sp" />
-        </LinearLayout>
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/selectAllBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/enable_all"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:textSize="12sp" />
+                <Button
+                    android:id="@+id/selectNoneBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/disable_all"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:textSize="12sp" />
+                <Button
+                    android:id="@+id/resetSourcesBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reset"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:textColor="@color/secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </HorizontalScrollView>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/sourceRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="8dp" />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="8dp" />
 
     </LinearLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
+        android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@color/surface"
-        app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/primary"
-        app:itemTextColor="@color/on_surface_variant" />
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -7,91 +7,94 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/surface">
-        <androidx.appcompat.widget.Toolbar
+        android:layout_height="wrap_content">
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/nav_apps"
-            app:titleTextColor="@color/on_surface" />
+            app:title="@string/nav_apps" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginBottom="80dp"
+        android:padding="16dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            app:startIconDrawable="@android:drawable/ic_menu_search"
-            app:endIconMode="clear_text">
-
+            android:hint="Search apps..."
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/searchAppEditText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Search apps..."
-                android:textColor="@color/on_surface" />
+                android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="8dp"
+            android:layout_marginTop="12dp"
             android:scrollbars="none">
-
-            <com.google.android.material.chip.ChipGroup
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
                 <com.google.android.material.chip.Chip
                     android:id="@+id/showSystemAppsChip"
+                    style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="System Apps"
-                    android:checkable="true" />
-
+                    android:text="@string/system_apps"
+                    android:layout_marginEnd="8dp" />
                 <com.google.android.material.chip.Chip
                     android:id="@+id/sortBtn"
+                    style="@style/Widget.Material3.Chip.Assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sort"
-                    app:chipIcon="@android:drawable/ic_menu_sort_by_size" />
-
+                    android:text="@string/sort_blocks"
+                    android:layout_marginEnd="8dp" />
                 <com.google.android.material.chip.Chip
                     android:id="@+id/createGroupBtn"
+                    style="@style/Widget.Material3.Chip.Assist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Create Group"
-                    app:chipIcon="@android:drawable/ic_menu_add" />
-
-            </com.google.android.material.chip.ChipGroup>
+                    android:text="Groups"
+                    android:layout_marginEnd="8dp" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/resetExclusionsBtn"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Reset All" />
+            </LinearLayout>
         </HorizontalScrollView>
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/loadingProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="gone"
+            android:layout_marginTop="16dp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/appRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="8dp" />
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="16dp" />
 
     </LinearLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
+        android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@color/surface"
-        app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/primary"
-        app:itemTextColor="@color/on_surface_variant" />
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -16,6 +16,7 @@ import androidx.work.*
 import com.example.shieldblock.MainActivity
 import com.example.shieldblock.R
 import com.example.shieldblock.BlacklistWorker
+import com.example.shieldblock.ShieldBlockWidget
 import com.example.shieldblock.data.BlacklistManager
 import com.example.shieldblock.data.WhitelistManager
 import com.example.shieldblock.data.FilterManager
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit
 class MyVpnService : VpnService() {
     private var vpnInterface: ParcelFileDescriptor? = null
     private var dnsProxyJob: Job? = null
+    private var widgetUpdateJob: Job? = null
     private lateinit var blacklistManager: BlacklistManager
     private lateinit var whitelistManager: WhitelistManager
     private lateinit var filterManager: FilterManager
@@ -59,6 +61,7 @@ class MyVpnService : VpnService() {
                 }
             }
             "stop" -> stopVpn()
+            "reload" -> reloadRules()
         }
         return START_STICKY
     }
@@ -103,9 +106,7 @@ class MyVpnService : VpnService() {
 
     private fun startVpn() {
         if (vpnInterface != null) {
-            dnsProxy?.updateBlacklist(blacklistManager.loadLocalBlacklist())
-            dnsProxy?.updateWhitelist(whitelistManager.getWhitelist())
-            dnsProxy?.updateCustomRules(filterManager.getCustomRules())
+            reloadRules()
             return
         }
 
@@ -116,12 +117,35 @@ class MyVpnService : VpnService() {
         dnsProxy = proxy
         proxy.updateBlacklist(blacklistManager.loadLocalBlacklist())
         proxy.updateWhitelist(whitelistManager.getWhitelist())
-        proxy.updateCustomRules(filterManager.getCustomRules())
+        proxy.updateSettings()
 
         dnsProxyJob = CoroutineScope(Dispatchers.IO).launch {
             proxy.run()
         }
+
+        startWidgetMonitor()
+
         startForeground(NOTIFICATION_ID, createNotification())
+        sendBroadcast(Intent("com.example.shieldblock.VPN_STATUS_CHANGED").apply { putExtra("status", true) })
+        sendBroadcast(Intent(this, ShieldBlockWidget::class.java).apply { action = "com.example.shieldblock.VPN_STATUS_CHANGED" })
+    }
+
+    private fun startWidgetMonitor() {
+        widgetUpdateJob?.cancel()
+        widgetUpdateJob = CoroutineScope(Dispatchers.Main).launch {
+            while (isActive) {
+                sendBroadcast(Intent(this@MyVpnService, ShieldBlockWidget::class.java).apply { action = "com.example.shieldblock.VPN_STATUS_CHANGED" })
+                delay(5000)
+            }
+        }
+    }
+
+    private fun reloadRules() {
+        dnsProxy?.let {
+            it.updateBlacklist(blacklistManager.loadLocalBlacklist())
+            it.updateWhitelist(whitelistManager.getWhitelist())
+            it.updateSettings()
+        }
     }
 
     private fun setupVpn() {
@@ -178,12 +202,15 @@ class MyVpnService : VpnService() {
 
     private fun stopVpn() {
         dnsProxyJob?.cancel()
+        widgetUpdateJob?.cancel()
         try {
             vpnInterface?.close()
         } catch (e: Exception) {}
         vpnInterface = null
         dnsProxy = null
         stopForeground(STOP_FOREGROUND_REMOVE)
+        sendBroadcast(Intent("com.example.shieldblock.VPN_STATUS_CHANGED").apply { putExtra("status", false) })
+        sendBroadcast(Intent(this, ShieldBlockWidget::class.java).apply { action = "com.example.shieldblock.VPN_STATUS_CHANGED" })
         stopSelf()
     }
 

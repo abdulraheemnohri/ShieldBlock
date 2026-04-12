@@ -15,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.InetAddress
-import kotlin.system.measureTimeMillis
 
 data class DnsProvider(val name: String, val ip: String, var latency: Long = -1)
 
@@ -36,20 +35,28 @@ class DnsLatencyActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+        }
 
         setupBottomNavigation()
         binding.latencyRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.latencyRecyclerView.adapter = LatencyAdapter(providers)
 
-        binding.startTestButton.setOnClickListener { runBenchmark() }
+        binding.startTestButton.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            runBenchmark()
+        }
 
         binding.pingBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             val host = binding.manualLookupInput.text.toString().ifBlank { "google.com" }
             runManualTest("PING", host)
         }
 
         binding.lookupBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             val host = binding.manualLookupInput.text.toString().ifBlank { "google.com" }
             runManualTest("LOOKUP", host)
         }
@@ -60,10 +67,25 @@ class DnsLatencyActivity : AppCompatActivity() {
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             when (item.itemId) {
-                R.id.nav_home -> { startActivity(Intent(this, MainActivity::class.java)); finish(); true }
-                R.id.nav_analytics -> { startActivity(Intent(this, AnalyticsActivity::class.java)); finish(); true }
-                R.id.nav_apps -> { startActivity(Intent(this, AppExclusionActivity::class.java)); finish(); true }
-                R.id.nav_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); finish(); true }
+                R.id.nav_home -> {
+                    startActivity(Intent(this, MainActivity::class.java)); overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+                    overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+                    finish()
+                    true
+                }
+                R.id.nav_analytics -> {
+                    startActivity(Intent(this, AnalyticsActivity::class.java)); overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+                    overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+                    finish()
+                    true
+                }
+                R.id.nav_apps -> {
+                    startActivity(Intent(this, AppExclusionActivity::class.java)); overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+                    overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+                    finish()
+                    true
+                }
+                R.id.nav_settings -> true
                 else -> false
             }
         }
