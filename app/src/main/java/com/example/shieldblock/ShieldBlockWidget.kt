@@ -42,7 +42,7 @@ class ShieldBlockWidget : AppWidgetProvider() {
             }
         }
 
-        // Always refresh UI on any relevant broadcast
+        // Refresh all widgets on any relevant broadcast (status change or blocked count update)
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val componentName = ComponentName(context, ShieldBlockWidget::class.java)
         val ids = appWidgetManager.getAppWidgetIds(componentName)
@@ -54,11 +54,13 @@ class ShieldBlockWidget : AppWidgetProvider() {
             val statsManager = StatsManager(context)
             val views = RemoteViews(context.packageName, R.layout.widget_layout)
 
+            val stats = MyVpnService.instance?.getTrafficStats() ?: (0L to 0L)
+            val speed = stats.first / 1024 // very rough, maybe just show total data saved or similar
             views.setTextViewText(R.id.widgetBlockedCount, statsManager.getBlockedAdsCount().toString())
 
             val isRunning = VpnService.prepare(context) == null
             views.setTextViewText(R.id.widgetStatusText, if (isRunning) "ON" else "OFF")
-            views.setTextColor(R.id.widgetStatusText, context.getColor(if (isRunning) R.color.primary else R.color.tertiary))
+            views.setTextColor(R.id.widgetStatusText, if (isRunning) 0xFF00E676.toInt() else 0xFFFF5252.toInt())
 
             val intent = Intent(context, ShieldBlockWidget::class.java).apply {
                 action = "com.example.shieldblock.TOGGLE_VPN"
@@ -67,6 +69,11 @@ class ShieldBlockWidget : AppWidgetProvider() {
                 context, appWidgetId, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             views.setOnClickPendingIntent(R.id.widgetToggleButton, pendingIntent)
+
+            // Open app when clicking the background
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            val appPendingIntent = PendingIntent.getActivity(context, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+            views.setOnClickPendingIntent(android.R.id.background, appPendingIntent)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }

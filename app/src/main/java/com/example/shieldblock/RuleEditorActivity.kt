@@ -46,7 +46,7 @@ class RuleEditorActivity : AppCompatActivity() {
             allDomains = withContext(Dispatchers.IO) {
                 blacklistManager.loadLocalBlacklist()
             }
-            binding.resultCountText.text = "${allDomains.size} domains in blacklist"
+            binding.resultCountText.text = getString(R.string.domains_found_label, allDomains.size)
         }
 
         binding.searchRuleEditText.addTextChangedListener(object : TextWatcher {
@@ -55,11 +55,11 @@ class RuleEditorActivity : AppCompatActivity() {
                 if (query.length >= 3) {
                     filterDomains(query)
                 } else if (query.isEmpty()) {
-                    binding.resultCountText.text = "${allDomains.size} domains in blacklist"
+                    binding.resultCountText.text = getString(R.string.domains_found_label, allDomains.size)
                     binding.ruleRecyclerView.adapter = null
                 } else {
                     binding.ruleRecyclerView.adapter = null
-                    binding.resultCountText.text = "Type 3+ characters to search"
+                    binding.resultCountText.setText(R.string.type_chars_hint)
                 }
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -77,9 +77,9 @@ class RuleEditorActivity : AppCompatActivity() {
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             when (item.itemId) {
-                R.id.nav_home -> { startActivity(Intent(this, MainActivity::class.java)); finish(); true }
-                R.id.nav_analytics -> { startActivity(Intent(this, AnalyticsActivity::class.java)); finish(); true }
-                R.id.nav_apps -> { startActivity(Intent(this, AppExclusionActivity::class.java)); finish(); true }
+                R.id.nav_home -> { startActivity(Intent(this, MainActivity::class.java)); overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right); finish(); true }
+                R.id.nav_analytics -> { startActivity(Intent(this, AnalyticsActivity::class.java)); overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right); finish(); true }
+                R.id.nav_apps -> { startActivity(Intent(this, AppExclusionActivity::class.java)); overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right); finish(); true }
                 R.id.nav_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); finish(); true }
                 else -> false
             }
@@ -88,28 +88,27 @@ class RuleEditorActivity : AppCompatActivity() {
 
     private fun filterDomains(query: String) {
         val filtered = allDomains.filter { it.contains(query, ignoreCase = true) }.take(100)
-        binding.resultCountText.text = "${filtered.size} results (showing top 100)"
+        binding.resultCountText.text = getString(R.string.search_results_label, filtered.size)
         binding.ruleRecyclerView.adapter = RuleAdapter(filtered) { domain ->
             whitelistManager.addToWhitelist(domain)
-            Toast.makeText(this, "$domain added to whitelist", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.whitelisted_toast, domain), Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun showAddCustomRuleDialog() {
         val input = EditText(this)
-        input.hint = "e.g. *.malicious-site.com"
+        input.hint = "*.example.com"
         AlertDialog.Builder(this)
-            .setTitle("Add Blocking Rule")
-            .setMessage("Enter a domain pattern or keyword to block.")
+            .setTitle(R.string.add_pattern)
             .setView(input)
-            .setPositiveButton("Block") { _, _ ->
+            .setPositiveButton(R.string.block) { _, _ ->
                 val rule = input.text.toString().trim()
                 if (rule.isNotEmpty()) {
                     filterManager.addCustomRule(rule)
-                    Toast.makeText(this, "Rule added", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Pattern added", Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 

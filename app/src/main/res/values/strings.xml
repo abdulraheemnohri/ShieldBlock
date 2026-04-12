@@ -1,93 +1,182 @@
 <resources>
-    <!-- General -->
     <string name="app_name">ShieldBlock Ultra</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
-    <string name="close">Close</string>
+    <string name="add">Add</string>
     <string name="ok">OK</string>
-    <string name="reset">Reset</string>
-    <string name="enable">Enable</string>
-    <string name="disable">Disable</string>
+    <string name="close">Close</string>
     <string name="allow">Allow</string>
+    <string name="refresh">Refresh</string>
+    <string name="clear_all">Purge All</string>
+    <string name="clear">Clear</string>
+    <string name="sync">Sync</string>
+    <string name="update">Update</string>
+    <string name="reset">Reset</string>
+    <string name="save_changes">Save Changes</string>
 
     <!-- Navigation -->
-    <string name="nav_home">Home</string>
-    <string name="nav_analytics">Analytics</string>
-    <string name="nav_apps">Apps</string>
-    <string name="nav_settings">Settings</string>
+    <string name="nav_home">Dashboard</string>
+    <string name="nav_analytics">Intelligence</string>
+    <string name="nav_apps">App Guard</string>
+    <string name="nav_settings">System</string>
 
     <!-- Home Screen -->
     <string name="shield_integrity">Shield Integrity</string>
     <string name="ads_intercepted">Ads Intercepted</string>
     <string name="bandwidth_saved">Bandwidth Saved</string>
-    <string name="live_threat_monitor">LIVE THREAT MONITOR</string>
-    <string name="activate">Activate</string>
+    <string name="live_threat_monitor">REAL-TIME THREAT FEED</string>
+    <string name="activate">Activate Aegis</string>
     <string name="deactivate">Deactivate Shield</string>
-    <string name="protected_status">Protected</string>
-    <string name="unprotected_status">Unprotected</string>
-    <string name="scanning_threats">Scanning for threats...</string>
-    <string name="status_filtering_active">Aegis filtering active</string>
-    <string name="status_deactivated">Shield is deactivated</string>
+    <string name="protected_status">SHIELD ACTIVE</string>
+    <string name="unprotected_status">SHIELD DOWN</string>
+    <string name="scanning_threats">Analyzing traffic patterns...</string>
+    <string name="status_filtering_active">Aegis Filtering Engine: ACTIVE</string>
+    <string name="status_deactivated">All protection layers deactivated</string>
     <string name="whitelist_dialog_title">Whitelist Domain?</string>
     <string name="whitelist_dialog_msg">Allow traffic for %1$s?</string>
-    <string name="background_location_title">Background Location Needed</string>
-    <string name="background_location_msg">To automatically disable the VPN on trusted Wi-Fi networks, ShieldBlock needs background location access.</string>
-    <string name="battery_optimization_warning">⚠️ Battery optimization active</string>
     <string name="whitelisted_toast">%1$s whitelisted</string>
-    <string name="rating_label">Shield Rating: %1$d%%</string>
+    <string name="rating_label">Protection Score: %1$d%%</string>
+    <string name="always_on_title">Always-on Protection</string>
+    <string name="always_on_msg">Enable Always-on VPN for persistent network security.</string>
+    <string name="open_settings">Open System Settings</string>
+    <string name="health_breakdown_title">Aegis Health Analysis</string>
+    <string name="audit">Audit</string>
+    <string name="dns">DNS</string>
+    <string name="logs">Logs</string>
+    <string name="monitoring">Monitoring...</string>
+
+    <string name="breakdown_vpn_active">VPN Core Active: %1$s</string>
+    <string name="breakdown_strict_mode">Strict Filtering: %1$s</string>
+    <string name="breakdown_smart_filter">Heuristic Engine: %1$s</string>
+    <string name="breakdown_ipv6_prot">IPv6 Shielding: %1$s</string>
+    <string name="breakdown_data_saver">Data Guard: %1$s</string>
+    <string name="background_location_title">Location Required</string>
+    <string name="background_location_msg">Background location is needed for trusted SSID detection.</string>
+    <string name="battery_optimization_warning">⚠️ Power management may impact Aegis</string>
 
     <!-- Analytics -->
-    <string name="visual_analytics">Visual Analytics</string>
-    <string name="blocking_trend">24-Hour Blocking Trend</string>
-    <string name="realtime_performance">Real-time Performance</string>
-    <string name="throughput_label">Throughput: %1$s KB/s</string>
-    <string name="top_blocking_apps">Top Blocking Apps</string>
-    <string name="run_audit">Run Security Audit</string>
+    <string name="visual_analytics">Threat Intelligence</string>
+    <string name="blocking_trend">24H Interception Trend</string>
+    <string name="realtime_performance">System Performance</string>
+    <string name="throughput_label">Traffic: %1$s KB/s</string>
+    <string name="top_blocking_apps">Top Intrusion Points</string>
+    <string name="run_audit">Run App Security Audit</string>
     <string name="open_sniffer">Open Network Sniffer</string>
+    <string name="total_queries">Total Requests: %1$d</string>
+    <string name="blocked_ratio">Mitigation Rate: %1$d%%</string>
+    <string name="peak_activity">Peak Activity: %1$02d:00</string>
+    <string name="summary_stats">Protection Summary</string>
 
     <!-- Settings -->
-    <string name="advanced_protection">Advanced Protection</string>
+    <string name="advanced_protection">Aegis Core Layers</string>
     <string name="strict_mode">Strict Mode</string>
-    <string name="strict_mode_desc">Allow ONLY whitelisted domains</string>
-    <string name="smart_filtering">Smart Filtering</string>
-    <string name="smart_filtering_desc">AI-powered keyword detection</string>
-    <string name="data_saver">Data Saver</string>
-    <string name="data_saver_desc">Block heavy video domains</string>
+    <string name="strict_mode_desc">Reject all unknown traffic</string>
+    <string name="smart_filtering">Heuristic Filter</string>
+    <string name="smart_filtering_desc">Pattern-based threat detection</string>
+    <string name="data_saver">Bandwidth Guard</string>
+    <string name="data_saver_desc">Restrict data-heavy trackers</string>
+    <string name="block_ipv6">IPv6 Leak Shield</string>
+    <string name="block_ipv6_desc">Prevent DNS leaks over IPv6</string>
+    <string name="log_all_queries">Deep Packet Logging</string>
+    <string name="log_all_queries_desc">Record detailed request telemetry</string>
+    <string name="auto_start">Persistent Shield</string>
+    <string name="auto_start_desc">Auto-activate on device boot</string>
 
+    <string name="perf_profile">Performance Tuning</string>
+    <string name="update_freq">Intelligence Update Freq</string>
     <string name="protection_profiles">Protection Profiles</string>
     <string name="kids_mode">Kids Mode</string>
     <string name="work_mode">Work Mode</string>
-    <string name="apply_kids_mode">Apply Kids Mode</string>
-    <string name="apply_work_mode">Apply Work Mode</string>
 
-    <string name="general_settings">General</string>
-    <string name="app_theme">App Theme</string>
-    <string name="perf_profile">Performance Profile</string>
+    <string name="filtering_rules">Filtering Rulesets</string>
+    <string name="blocklist_sources">Intelligence Sources</string>
+    <string name="blocklist_sources_desc">Manage remote lists and files</string>
+    <string name="rule_search">Pattern Intelligence</string>
+    <string name="rule_search_desc">Search and edit blocking patterns</string>
+    <string name="manage_whitelist">Whitelisted Assets</string>
+    <string name="manage_whitelist_desc">View and manage safe domains</string>
 
-    <string name="filtering_rules">Filtering &amp; Rules</string>
-    <string name="blocklist_sources">Blocklist Sources</string>
-    <string name="rule_search">Manual Rule Editor</string>
-    <string name="manage_whitelist">Manage Whitelist</string>
-
-    <string name="network_apps">Network &amp; Connectivity</string>
-    <string name="upstream_dns">Upstream DNS</string>
+    <string name="network_apps">Network Infrastructure</string>
+    <string name="upstream_dns">Upstream Provider</string>
     <string name="dns_benchmark">Network Diagnostics</string>
+    <string name="dns_benchmark_desc">Benchmark DNS resolution speeds</string>
     <string name="network_rules">Trusted Networks</string>
+    <string name="network_rules_desc">Manage SSID-based exclusions</string>
+    <string name="general_settings">General Settings</string>
+    <string name="app_theme">Application Theme</string>
 
-    <string name="advanced_maintenance">Advanced Maintenance</string>
-    <string name="force_update">Force Blocklist Update</string>
-    <string name="clear_stats">Reset Statistics &amp; Logs</string>
-    <string name="export_config">Backup &amp; Restore Configuration</string>
+    <string name="force_update">Sync Intelligence DB</string>
+    <string name="clear_stats">Purge Telemetry Logs</string>
+    <string name="export_config">Configuration Vault</string>
+    <string name="update_triggered">Syncing intelligence databases...</string>
 
     <!-- Logs & Audit -->
-    <string name="activity_logs">Activity Logs</string>
-    <string name="system_health">About &amp; System Health</string>
-    <string name="security_audit">Security Audit</string>
+    <string name="activity_logs">System Events</string>
+    <string name="system_health">Aegis System Health</string>
+    <string name="security_audit">App Auditor</string>
     <string name="network_sniffer">Network Sniffer</string>
-    <string name="no_logs_found">No activity logs found.</string>
-    <string name="error_reading_logs">Error accessing log files.</string>
+    <string name="export_logs">Export System Log</string>
+    <string name="log_detail_title">Event Telemetry</string>
+    <string name="findings">System Findings</string>
+    <string name="export_label">Export</string>
+    <string name="export_sniffer">Export CSV</string>
+    <string name="no_logs_found">No telemetry data recorded</string>
+    <string name="error_reading_logs">Critical telemetry access error</string>
+
+    <!-- Source Management -->
+    <string name="add_url">Add Intelligence URL</string>
+    <string name="upload_file">Import Local List</string>
+    <string name="enable_all">Activate All</string>
+    <string name="disable_all">Deactivate All</string>
+    <string name="restore_defaults">Restore Factory Rules</string>
+    <string name="restore_defaults_msg">Reset all intelligence sources to defaults?</string>
+    <string name="add_source_title">Add Source</string>
+    <string name="local_file">Local Filesystem</string>
+    <string name="upload_success">Import Successful</string>
+    <string name="upload_failed">Import Failed: %1$s</string>
+    <string name="syncing_sources">Updating Aegis rulesets...</string>
+    <string name="treat_as_whitelist">Treat as Whitelist</string>
+
+    <!-- App Exclusion -->
+    <string name="system_apps">System Packages</string>
+    <string name="sort_blocks">Filter: High Activity</string>
+    <string name="reset_all">Restore Defaults</string>
+    <string name="exclusions_reset_toast">Bypass list cleared</string>
+    <string name="ads_blocked_count">%1$d trackers mitigated</string>
+    <string name="high_risk_blocked">🔥 %1$d critical threats blocked</string>
+    <string name="group_created_toast">Security group created (%1$d apps)</string>
+
+    <!-- DNS Diagnostics -->
+    <string name="dns_desc">Test DNS performance and basic connectivity.</string>
+    <string name="run_benchmarks">Execute Global Probe</string>
+    <string name="manual_lookup">Manual Probe</string>
+    <string name="ping">Probe</string>
+    <string name="resolve">Resolve</string>
+
+    <!-- About -->
+    <string name="version_label">Aegis Core: v%1$s (Ultra)</string>
+    <string name="up_to_date">Threat intelligence is current</string>
+    <string name="check_updates">Check for Updates</string>
+    <string name="vpn_status_label">VPN Status: %1$s</string>
+    <string name="active_filters_label">Active Filters: %1$d sources</string>
+    <string name="db_size_label">Database Size: %1$d domains</string>
+    <string name="uptime_label">System Uptime: %1$dh %2$dm</string>
+
+    <!-- Network Rules -->
+    <string name="network_rules_hint">Define networks where the Shield should remain inactive.</string>
+    <string name="exclude_current_wifi">Trust Current WiFi</string>
+
+    <!-- Rule Editor -->
+    <string name="add_pattern">Add Pattern</string>
+    <string name="domains_found_label">%1$d active patterns</string>
+    <string name="type_chars_hint">Query database (3+ characters)</string>
+    <string name="search_results_label">Found %1$d matches</string>
+    <string name="block">Reject</string>
+
+    <!-- Sniffer -->
+    <string name="sniffer_desc">Real-time DNS packet interception and analysis.</string>
 
     <!-- External Labels -->
-    <string name="quick_settings_label">ShieldBlock</string>
+    <string name="quick_settings_label">Aegis Shield</string>
 </resources>

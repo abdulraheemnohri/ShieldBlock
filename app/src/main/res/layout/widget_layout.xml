@@ -12,66 +12,53 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_launcher_foreground"
-            android:tint="@color/primary" />
-
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
             android:text="ShieldBlock"
-            android:textColor="@color/on_surface"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/widgetStatusText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="OFF"
-            android:textColor="@color/tertiary"
-            android:textSize="12sp"
-            android:textStyle="bold" />
+            android:textColor="#FF5252"
+            android:textStyle="bold"
+            android:textSize="10sp" />
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/outline_variant"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_marginTop="8dp">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center"
-            android:layout_marginEnd="16dp">
+            android:gravity="center">
             <TextView
                 android:id="@+id/widgetBlockedCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0"
-                android:textColor="@color/primary"
-                android:textSize="20sp"
+                android:textColor="#00E676"
+                android:textSize="18sp"
                 android:textStyle="bold" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Blocked"
-                android:textColor="@color/on_surface_variant"
-                android:textSize="10sp" />
+                android:textColor="#BBBBBB"
+                android:textSize="8sp" />
         </LinearLayout>
 
         <ImageButton
@@ -80,7 +67,8 @@
             android:layout_height="48dp"
             android:background="@drawable/circular_button_bg"
             android:src="@android:drawable/ic_lock_power_off"
-            android:tint="@color/on_primary" />
+            android:contentDescription="Toggle VPN" />
+
     </LinearLayout>
 
 </LinearLayout>

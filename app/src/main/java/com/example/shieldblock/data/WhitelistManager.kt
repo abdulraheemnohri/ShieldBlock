@@ -25,8 +25,17 @@ class WhitelistManager(private val context: Context) {
 
     fun removeFromWhitelist(domain: String) {
         if (manualWhitelistFile.exists()) {
-            val currentManual = manualWhitelistFile.readLines().filter { it != domain }
+            val currentManual = manualWhitelistFile.readLines().filter { it.trim() != domain.trim() }
             manualWhitelistFile.writeText(currentManual.joinToString("\n"))
         }
+    }
+
+    fun clearWhitelist() {
+        if (manualWhitelistFile.exists()) manualWhitelistFile.delete()
+        if (whitelistFile.exists()) whitelistFile.delete()
+    }
+
+    fun updateWhitelistFromHosts(hosts: List<String>) {
+        whitelistFile.writeText(hosts.joinToString("\n"))
     }
 }

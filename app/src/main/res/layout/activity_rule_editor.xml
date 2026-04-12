@@ -7,81 +7,67 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/surface">
-        <androidx.appcompat.widget.Toolbar
+        android:layout_height="wrap_content">
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/rule_search"
-            app:titleTextColor="@color/on_surface" />
+            app:title="@string/rule_search" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginBottom="80dp"
+        android:padding="16dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            app:startIconDrawable="@android:drawable/ic_menu_search"
-            app:endIconMode="clear_text">
-
+            android:hint="Search database..."
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/searchRuleEditText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Search active blacklist..."
-                android:textColor="@color/on_surface" />
+                android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
             android:gravity="center_vertical">
-
             <TextView
                 android:id="@+id/resultCountText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="0 domains found"
+                android:text="@string/scanning_threats"
                 android:textColor="@color/on_surface_variant"
                 android:textSize="12sp" />
-
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/addCustomRuleBtn"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add Pattern"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:textSize="12sp" />
+                android:text="@string/add_pattern" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/ruleRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="16dp" />
 
     </LinearLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
+        android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@color/surface"
-        app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/primary"
-        app:itemTextColor="@color/on_surface_variant" />
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

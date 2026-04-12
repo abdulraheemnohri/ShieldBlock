@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="4dp"
+    app:cardBackgroundColor="@color/surface_container_low"
+    app:cardCornerRadius="12dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/logTimestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/on_surface_variant"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/logContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/on_surface"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/logLatency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary"
+            android:textSize="10sp"
+            android:layout_marginTop="2dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

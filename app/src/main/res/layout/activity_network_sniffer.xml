@@ -7,47 +7,70 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/surface">
-        <androidx.appcompat.widget.Toolbar
+        android:layout_height="wrap_content">
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="@string/network_sniffer"
-            app:titleTextColor="@color/on_surface" />
+            app:title="@string/network_sniffer" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginBottom="80dp"
+        android:padding="16dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:text="Live view of intercepted UDP DNS packets."
-            android:textColor="@color/on_surface_variant"
-            android:textSize="14sp" />
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/surface_container_low"
+            app:cardCornerRadius="16dp"
+            app:strokeWidth="0dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="@string/sniffer_desc"
+                android:textColor="@color/on_surface_variant"
+                android:textSize="14sp" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/clearSnifferBtn"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/clear" />
+            <Button
+                android:id="@+id/exportSnifferBtn"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/export_label" />
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/snifferRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="8dp" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
     </LinearLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
+        android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@color/surface"
-        app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/primary"
-        app:itemTextColor="@color/on_surface_variant" />
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

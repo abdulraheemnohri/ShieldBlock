@@ -3,7 +3,6 @@ package com.example.shieldblock
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -19,8 +18,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.shieldblock.data.StatsManager
+import com.example.shieldblock.data.AppGroup
 import com.example.shieldblock.data.AppGroupManager
+import com.example.shieldblock.data.StatsManager
 import com.example.shieldblock.databinding.ActivityAppExclusionBinding
 import com.example.shieldblock.databinding.ItemAppExclusionBinding
 import kotlinx.coroutines.Dispatchers
@@ -30,11 +30,12 @@ import kotlinx.coroutines.withContext
 data class AppInfo(
     val name: String,
     val packageName: String,
-    val icon: Drawable,
+    val icon: android.graphics.drawable.Drawable,
     var isExcluded: Boolean,
     val blockedCount: Int,
     val isSystem: Boolean,
-    val isHighRisk: Boolean
+    val isHighRisk: Boolean,
+    val category: String = "Misc"
 )
 
 class AppExclusionActivity : AppCompatActivity() {
@@ -53,7 +54,10 @@ class AppExclusionActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+        }
 
         setupBottomNavigation()
         binding.appRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -75,6 +79,12 @@ class AppExclusionActivity : AppCompatActivity() {
             it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             showGroupMenu()
         }
+        binding.resetExclusionsBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            PreferenceManager.getDefaultSharedPreferences(this).edit().remove(excludedAppsKey).apply()
+            refreshAppsList()
+            Toast.makeText(this, R.string.exclusions_reset_toast, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun setupBottomNavigation() {
@@ -82,10 +92,25 @@ class AppExclusionActivity : AppCompatActivity() {
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             when (item.itemId) {
-                R.id.nav_home -> { startActivity(Intent(this, MainActivity::class.java)); finish(); true }
-                R.id.nav_analytics -> { startActivity(Intent(this, AnalyticsActivity::class.java)); finish(); true }
+                R.id.nav_home -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+                    finish()
+                    true
+                }
+                R.id.nav_analytics -> {
+                    startActivity(Intent(this, AnalyticsActivity::class.java))
+                    overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+                    finish()
+                    true
+                }
                 R.id.nav_apps -> true
-                R.id.nav_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); finish(); true }
+                R.id.nav_settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    finish()
+                    true
+                }
                 else -> false
             }
         }
@@ -107,46 +132,52 @@ class AppExclusionActivity : AppCompatActivity() {
             }.show()
     }
 
-    private fun applyGroupExclusion(group: com.example.shieldblock.data.AppGroup) {
+    private fun applyGroupExclusion(group: AppGroup) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val current = prefs.getStringSet(excludedAppsKey, emptySet())?.toMutableSet() ?: mutableSetOf()
         current.addAll(group.packages)
         prefs.edit().putStringSet(excludedAppsKey, current).apply()
         refreshAppsList()
-        Toast.makeText(this, "Group '${group.name}' excluded", Toast.LENGTH_SHORT).show()
     }
 
     private fun showCreateGroupDialog() {
         val input = EditText(this)
-        input.hint = "Group Name (e.g. Social)"
+        input.hint = "Group Name"
         AlertDialog.Builder(this)
             .setTitle("Create App Group")
-            .setMessage("Group will include currently filtered apps.")
             .setView(input)
             .setPositiveButton("Create") { _, _ ->
                 val name = input.text.toString()
                 if (name.isNotBlank()) {
                     val pkgs = filteredApps.map { it.packageName }.toSet()
                     groupManager.saveGroup(name, pkgs)
-                    Toast.makeText(this, "Group '$name' created with ${pkgs.size} apps", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.group_created_toast, pkgs.size), Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancel", null).show()
     }
 
     private fun refreshAppsList() {
+        binding.loadingProgress.visibility = View.VISIBLE
+        binding.appRecyclerView.visibility = View.GONE
         lifecycleScope.launch {
             allApps = withContext(Dispatchers.IO) { loadApps() }
             applyFilters()
+            binding.loadingProgress.visibility = View.GONE
+            binding.appRecyclerView.visibility = View.VISIBLE
         }
     }
 
     private fun showSortDialog() {
-        val options = arrayOf("Most Blocks", "App Name")
+        val options = arrayOf("Most Blocks", "App Name", "By Category")
         AlertDialog.Builder(this)
             .setTitle("Sort by")
             .setItems(options) { _, which ->
-                sortMode = if (which == 0) "blocked" else "name"
+                sortMode = when(which) {
+                    0 -> "blocked"
+                    1 -> "name"
+                    else -> "category"
+                }
                 applyFilters()
             }
             .show()
@@ -161,10 +192,10 @@ class AppExclusionActivity : AppCompatActivity() {
             (it.name.contains(query, ignoreCase = true) || it.packageName.contains(query, ignoreCase = true))
         }
 
-        filteredApps = if (sortMode == "blocked") {
-            filteredApps.sortedByDescending { it.blockedCount }
-        } else {
-            filteredApps.sortedBy { it.name }
+        filteredApps = when(sortMode) {
+            "blocked" -> filteredApps.sortedByDescending { it.blockedCount }
+            "name" -> filteredApps.sortedBy { it.name }
+            else -> filteredApps.sortedWith(compareBy({ it.category }, { it.name }))
         }
 
         binding.appRecyclerView.adapter = AppAdapter(filteredApps) { pkg, isExcluded ->
@@ -183,6 +214,7 @@ class AppExclusionActivity : AppCompatActivity() {
         return pm.getInstalledApplications(PackageManager.GET_META_DATA)
             .map {
                 val blockedCount = statsManager.getAppBlockedCount(it.packageName)
+                val category = getHeuristicCategory(it.packageName)
                 AppInfo(
                     it.loadLabel(pm).toString(),
                     it.packageName,
@@ -190,9 +222,22 @@ class AppExclusionActivity : AppCompatActivity() {
                     excludedPackages.contains(it.packageName),
                     blockedCount,
                     (it.flags and ApplicationInfo.FLAG_SYSTEM) != 0,
-                    blockedCount > 50
+                    blockedCount > 50,
+                    category
                 )
             }
+    }
+
+    private fun getHeuristicCategory(pkg: String): String {
+        return when {
+            pkg.contains("android") || pkg.contains("system") -> "System"
+            pkg.contains("google") || pkg.contains("vending") -> "Google"
+            pkg.contains("social") || pkg.contains("facebook") || pkg.contains("twitter") || pkg.contains("instagram") || pkg.contains("tiktok") -> "Social"
+            pkg.contains("game") || pkg.contains("unity") || pkg.contains("tencent") -> "Gaming"
+            pkg.contains("bank") || pkg.contains("finance") || pkg.contains("wallet") -> "Finance"
+            pkg.contains("shop") || pkg.contains("amazon") || pkg.contains("ebay") -> "Shopping"
+            else -> "Tools & Misc"
+        }
     }
 
     class AppAdapter(private val apps: List<AppInfo>, val onToggle: (String, Boolean) -> Unit) :
@@ -208,21 +253,22 @@ class AppExclusionActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val app = apps[position]
             holder.binding.appName.text = app.name
-            holder.binding.packageName.text = app.packageName
+            holder.binding.packageName.text = "${app.category} • ${app.packageName}"
             holder.binding.appIcon.setImageDrawable(app.icon)
             holder.binding.exclusionSwitch.setOnCheckedChangeListener(null)
             holder.binding.exclusionSwitch.isChecked = app.isExcluded
 
             holder.binding.appStatsText.text = if (app.isHighRisk) {
-                "⚠️ ${app.blockedCount} tracker requests blocked"
+                holder.itemView.context.getString(R.string.high_risk_blocked, app.blockedCount)
             } else {
-                "${app.blockedCount} ads blocked"
+                holder.itemView.context.getString(R.string.ads_blocked_count, app.blockedCount)
             }
             holder.binding.appStatsText.setTextColor(
-                holder.itemView.context.getColor(if (app.isHighRisk) R.color.tertiary else R.color.primary)
+                holder.itemView.context.getColor(if (app.isHighRisk) R.color.tertiary else R.color.emerald_accent)
             )
 
             holder.binding.exclusionSwitch.setOnCheckedChangeListener { _, isChecked ->
+                holder.itemView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                 app.isExcluded = isChecked
                 onToggle(app.packageName, isChecked)
             }

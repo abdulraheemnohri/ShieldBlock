@@ -7,67 +7,67 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/surface">
-        <androidx.appcompat.widget.Toolbar
+        android:layout_height="wrap_content">
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="About &amp; Health"
-            app:titleTextColor="@color/on_surface" />
+            app:title="@string/system_health" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="80dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp"
-            android:gravity="center_horizontal">
+            android:padding="24dp">
 
             <ImageView
                 android:layout_width="80dp"
                 android:layout_height="80dp"
+                android:layout_gravity="center"
                 android:src="@drawable/ic_launcher_foreground"
                 app:tint="@color/primary" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ShieldBlock Ultra"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                android:text="@string/app_name"
                 android:textColor="@color/on_surface"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp" />
+                android:textSize="22sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/currentVersionText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Version 1.0 (Enterprise)"
+                android:layout_gravity="center"
+                android:text="@string/version_label"
                 android:textColor="@color/on_surface_variant"
                 android:textSize="14sp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/checkForUpdatesBtn"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_marginTop="16dp"
-                android:text="Check for Updates"
-                style="@style/Widget.Material3.Button.TonalButton"
-                app:icon="@android:drawable/ic_popup_sync" />
+                android:text="@string/check_updates" />
 
             <TextView
                 android:id="@+id/updateStatusText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_marginTop="8dp"
-                android:text="Up to date"
+                android:text="@string/up_to_date"
                 android:textColor="@color/primary"
                 android:textSize="12sp"
                 android:visibility="gone" />
@@ -77,53 +77,59 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 app:cardBackgroundColor="@color/surface_container_low"
-                app:cardCornerRadius="16dp"
+                app:cardCornerRadius="20dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="System Health"
+                        android:text="@string/findings"
                         android:textColor="@color/primary"
-                        android:textStyle="bold" />
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="16dp" />
 
                     <TextView
                         android:id="@+id/healthVpnText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="VPN Status: Checking..."
-                        android:textColor="@color/on_surface" />
+                        android:text="@string/vpn_status_label"
+                        android:textColor="@color/on_surface"
+                        android:textSize="14sp"
+                        android:paddingVertical="8dp" />
 
                     <TextView
                         android:id="@+id/healthFilterText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Active Filters: 0"
-                        android:textColor="@color/on_surface" />
+                        android:text="@string/active_filters_label"
+                        android:textColor="@color/on_surface"
+                        android:textSize="14sp"
+                        android:paddingVertical="8dp" />
 
                     <TextView
                         android:id="@+id/healthDatabaseText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Database Size: 0 domains"
-                        android:textColor="@color/on_surface" />
+                        android:text="@string/db_size_label"
+                        android:textColor="@color/on_surface"
+                        android:textSize="14sp"
+                        android:paddingVertical="8dp" />
 
                     <TextView
                         android:id="@+id/healthUptimeText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="System Uptime: --"
-                        android:textColor="@color/on_surface" />
+                        android:text="@string/uptime_label"
+                        android:textColor="@color/on_surface"
+                        android:textSize="14sp"
+                        android:paddingVertical="8dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -132,13 +138,11 @@
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
+        android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@color/surface"
-        app:menu="@menu/bottom_nav_menu"
-        app:itemIconTint="@color/primary"
-        app:itemTextColor="@color/on_surface_variant" />
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
