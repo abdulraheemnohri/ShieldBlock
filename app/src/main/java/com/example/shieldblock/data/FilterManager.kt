@@ -35,17 +35,15 @@ class FilterManager(private val context: Context) {
         FilterSource("fakenews", "Fake News Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews/hosts", category = "Security"),
         FilterSource("gambling", "Gambling Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling/hosts", category = "Content"),
         FilterSource("porn", "Adult Content Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn/hosts", category = "Family"),
-        FilterSource("crypto", "Crypto/Mining Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-social/hosts", category = "Security"),
-        FilterSource("oisd", "OISD Basic", "https://small.oisd.nl", category = "Community"),
-        FilterSource("1hosts", "1Hosts Lite", "https://o0.pages.dev/Lite/hosts.txt", category = "Community")
+        FilterSource("crypto", "Crypto Blocker", "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-social/hosts", category = "Security")
     )
 
     val dnsProfiles = listOf(
-        DnsProfile("Google DNS", "8.8.8.8", "Fast and reliable, global coverage."),
-        DnsProfile("Cloudflare", "1.1.1.1", "Privacy-focused, very fast."),
-        DnsProfile("AdGuard DNS", "94.140.14.14", "Built-in ad and tracker blocking."),
-        DnsProfile("CleanBrowsing", "185.228.168.168", "Family-safe, blocks adult content."),
-        DnsProfile("Quad9", "9.9.9.9", "Security-focused, blocks malicious sites.")
+        DnsProfile("Google DNS", "8.8.8.8", "Fast and reliable."),
+        DnsProfile("Cloudflare", "1.1.1.1", "Privacy-focused."),
+        DnsProfile("AdGuard DNS", "94.140.14.14", "Built-in blocking."),
+        DnsProfile("CleanBrowsing", "185.228.168.168", "Family-safe."),
+        DnsProfile("Quad9", "9.9.9.9", "Security-focused.")
     )
 
     fun getEnabledFilterIds(): Set<String> {
@@ -58,22 +56,24 @@ class FilterManager(private val context: Context) {
         prefs.edit().putStringSet(enabledFiltersKey, current).apply()
     }
 
-    fun getCustomSources(): List<FilterSource> {
+    fun getAllSources(): List<FilterSource> {
+        val counts = getSourceCounts()
+        val all = defaultFilters + getCustomSources()
+        all.forEach { it.domainCount = counts.optInt(it.id, 0) }
+        return all
+    }
+
+    private fun getCustomSources(): List<FilterSource> {
         val json = prefs.getString(customSourcesKey, "[]") ?: "[]"
         val array = JSONArray(json)
         val list = mutableListOf<FilterSource>()
-        val counts = getSourceCounts()
         for (i in 0 until array.length()) {
             val obj = array.getJSONObject(i)
             val id = obj.getString("id")
             list.add(FilterSource(
-                id,
-                obj.getString("name"),
-                obj.getString("url"),
-                obj.optString("type", "URL"),
-                getEnabledFilterIds().contains(id),
-                obj.optString("category", "Custom"),
-                counts.optInt(id, 0)
+                id, obj.getString("name"), obj.getString("url"),
+                obj.optString("type", "URL"), getEnabledFilterIds().contains(id),
+                obj.optString("category", "Custom")
             ))
         }
         return list
@@ -88,10 +88,6 @@ class FilterManager(private val context: Context) {
     }
 
     fun removeCustomSource(id: String) {
-        val source = getCustomSources().find { it.id == id }
-        if (source?.type == "LOCAL") {
-            try { File(source.url).delete() } catch(e: Exception) {}
-        }
         val sources = getCustomSources().filter { it.id != id }
         saveCustomSources(sources)
         setFilterEnabled(id, false)
@@ -101,32 +97,20 @@ class FilterManager(private val context: Context) {
         val array = JSONArray()
         sources.forEach {
             val obj = JSONObject()
-            obj.put("id", it.id)
-            obj.put("name", it.name)
-            obj.put("url", it.url)
-            obj.put("type", it.type)
-            obj.put("category", it.category)
+            obj.put("id", it.id).put("name", it.name).put("url", it.url).put("type", it.type).put("category", it.category)
             array.put(obj)
         }
         prefs.edit().putString(customSourcesKey, array.toString()).apply()
     }
 
-    fun getSourceCounts(): JSONObject {
-        val json = prefs.getString(sourceCountsKey, "{}") ?: "{}"
-        return JSONObject(json)
+    private fun getSourceCounts(): JSONObject {
+        return JSONObject(prefs.getString(sourceCountsKey, "{}") ?: "{}")
     }
 
     fun updateSourceCount(id: String, count: Int) {
         val counts = getSourceCounts()
         counts.put(id, count)
         prefs.edit().putString(sourceCountsKey, counts.toString()).apply()
-    }
-
-    fun getAllSources(): List<FilterSource> {
-        val counts = getSourceCounts()
-        val all = defaultFilters + getCustomSources()
-        all.forEach { it.domainCount = counts.optInt(it.id, 0) }
-        return all
     }
 
     fun getCustomRules(): Set<String> {
@@ -137,5 +121,35 @@ class FilterManager(private val context: Context) {
         val current = getCustomRules().toMutableSet()
         current.add(rule)
         prefs.edit().putStringSet(customRulesKey, current).apply()
+    }
+
+    fun applyProfile(profile: String) {
+        when(profile) {
+            "KIDS" -> {
+                prefs.edit()
+                    .putBoolean("safe_search", true)
+                    .putBoolean("strict_mode", false)
+                    .putBoolean("smart_filtering", true)
+                    .apply()
+                setFilterEnabled("porn", true)
+                setFilterEnabled("gambling", true)
+            }
+            "WORK" -> {
+                prefs.edit()
+                    .putBoolean("safe_search", false)
+                    .putBoolean("strict_mode", false)
+                    .putBoolean("smart_filtering", false)
+                    .apply()
+                setFilterEnabled("social", true)
+            }
+            "SECURITY" -> {
+                prefs.edit()
+                    .putBoolean("strict_mode", false)
+                    .putBoolean("smart_filtering", true)
+                    .apply()
+                setFilterEnabled("fakenews", true)
+                setFilterEnabled("crypto", true)
+            }
+        }
     }
 }

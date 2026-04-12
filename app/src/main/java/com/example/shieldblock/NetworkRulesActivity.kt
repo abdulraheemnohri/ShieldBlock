@@ -1,8 +1,10 @@
 package com.example.shieldblock
 
 import android.content.Context
+import android.content.Intent
 import android.net.wifi.WifiManager
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
@@ -26,8 +28,8 @@ class NetworkRulesActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
+        setupBottomNavigation()
         binding.wifiRecyclerView.layoutManager = LinearLayoutManager(this)
-
         refreshList()
 
         binding.addCurrentWifiBtn.setOnClickListener {
@@ -38,6 +40,20 @@ class NetworkRulesActivity : AppCompatActivity() {
                 addSsid(ssid)
             } else {
                 Toast.makeText(this, "Connect to Wi-Fi first", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.nav_settings
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            when (item.itemId) {
+                R.id.nav_home -> { startActivity(Intent(this, MainActivity::class.java)); finish(); true }
+                R.id.nav_analytics -> { startActivity(Intent(this, AnalyticsActivity::class.java)); finish(); true }
+                R.id.nav_apps -> { startActivity(Intent(this, AppExclusionActivity::class.java)); finish(); true }
+                R.id.nav_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); finish(); true }
+                else -> false
             }
         }
     }

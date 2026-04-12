@@ -5,6 +5,7 @@ import android.net.Uri
 import android.net.VpnService
 import android.os.Bundle
 import android.os.SystemClock
+import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -24,7 +25,6 @@ class AboutActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAboutBinding
     private val filterManager by lazy { FilterManager(this) }
     private val blacklistManager by lazy { BlacklistManager(this) }
-    private val client = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,20 +35,51 @@ class AboutActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
+        setupBottomNavigation()
         binding.currentVersionText.text = "Version ${BuildConfig.VERSION_NAME} (Enterprise Edition)"
 
         binding.checkForUpdatesBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             checkForUpdates()
         }
 
         checkHealth()
     }
 
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.nav_settings
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_analytics -> {
+                    startActivity(Intent(this, AnalyticsActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_apps -> {
+                    startActivity(Intent(this, AppExclusionActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
     private fun checkForUpdates() {
         binding.checkForUpdatesBtn.isEnabled = false
         binding.updateStatusText.visibility = View.VISIBLE
         binding.updateStatusText.text = "Checking for updates..."
-        binding.updateStatusText.setTextColor(getColor(R.color.on_surface_variant))
 
         lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) {
@@ -76,7 +107,7 @@ class AboutActivity : AppCompatActivity() {
                     }
                 }
             } else {
-                binding.updateStatusText.text = "Update check failed. Try again later."
+                binding.updateStatusText.text = "Update check failed."
                 binding.updateStatusText.setTextColor(getColor(R.color.tertiary))
             }
             binding.checkForUpdatesBtn.isEnabled = true

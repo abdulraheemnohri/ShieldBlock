@@ -13,7 +13,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="About &amp; Health"
+            app:title="@string/security_audit"
             app:titleTextColor="@color/on_surface" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -30,47 +30,31 @@
             android:padding="24dp"
             android:gravity="center_horizontal">
 
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@drawable/ic_launcher_foreground"
-                app:tint="@color/primary" />
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/securityScoreProgress"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                app:indicatorSize="120dp"
+                app:trackThickness="12dp"
+                app:indicatorColor="@color/primary" />
 
             <TextView
+                android:id="@+id/securityScoreText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ShieldBlock Ultra"
+                android:layout_marginTop="-80dp"
+                android:text="100"
                 android:textColor="@color/on_surface"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:layout_marginTop="16dp" />
+                android:textSize="36sp"
+                android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/currentVersionText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Version 1.0 (Enterprise)"
+                android:layout_marginTop="48dp"
+                android:text="Security Rating"
                 android:textColor="@color/on_surface_variant"
                 android:textSize="14sp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/checkForUpdatesBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Check for Updates"
-                style="@style/Widget.Material3.Button.TonalButton"
-                app:icon="@android:drawable/ic_popup_sync" />
-
-            <TextView
-                android:id="@+id/updateStatusText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Up to date"
-                android:textColor="@color/primary"
-                android:textSize="12sp"
-                android:visibility="gone" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -81,52 +65,36 @@
                 app:strokeWidth="0dp">
 
                 <LinearLayout
+                    android:id="@+id/auditResultsContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="System Health"
+                        android:text="Findings"
                         android:textColor="@color/primary"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/healthVpnText"
+                        android:id="@+id/auditDetailsText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:text="VPN Status: Checking..."
-                        android:textColor="@color/on_surface" />
-
-                    <TextView
-                        android:id="@+id/healthFilterText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Active Filters: 0"
-                        android:textColor="@color/on_surface" />
-
-                    <TextView
-                        android:id="@+id/healthDatabaseText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Database Size: 0 domains"
-                        android:textColor="@color/on_surface" />
-
-                    <TextView
-                        android:id="@+id/healthUptimeText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="System Uptime: --"
+                        android:text="Scanning applications..."
                         android:textColor="@color/on_surface" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/reScanBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Re-Scan Apps" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

@@ -3,6 +3,7 @@ package com.example.shieldblock
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
@@ -36,14 +37,47 @@ class SourceManagementActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
+        setupBottomNavigation()
         binding.sourceRecyclerView.layoutManager = LinearLayoutManager(this)
         refreshList()
 
         binding.addSourceBtn.setOnClickListener { showAddSourceDialog() }
         binding.uploadFileBtn.setOnClickListener { filePicker.launch("text/*") }
 
-        binding.selectAllBtn.setOnClickListener { bulkToggle(true) }
-        binding.selectNoneBtn.setOnClickListener { bulkToggle(false) }
+        binding.selectAllBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            bulkToggle(true)
+        }
+        binding.selectNoneBtn.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            bulkToggle(false)
+        }
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.selectedItemId = R.id.nav_settings
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_analytics -> {
+                    startActivity(Intent(this, AnalyticsActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_apps -> {
+                    startActivity(Intent(this, AppExclusionActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.nav_settings -> true
+                else -> false
+            }
+        }
     }
 
     private fun bulkToggle(enabled: Boolean) {
