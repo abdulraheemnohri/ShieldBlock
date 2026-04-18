@@ -37,4 +37,14 @@
     <style name="ShapeAppearance.ShieldBlock.Button" parent="">
         <item name="cornerSize">50%</item>
     </style>
+    <style name="Widget.Aegis.GlassCard" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">#110F1930</item>
+        <item name="cardCornerRadius">24dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">#22FFFFFF</item>
+    </style>
+    <style name="Aegis.Dialog.Theme" parent="Theme.Material3.Dark.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
 </resources>

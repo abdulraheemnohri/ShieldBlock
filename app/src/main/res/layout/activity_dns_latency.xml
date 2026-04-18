@@ -1,37 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background">
+    android:layout_height="match_parent">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <com.example.shieldblock.ui.AuraBackgroundView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="@string/dns_benchmark" />
-    </com.google.android.material.appbar.AppBarLayout>
+        android:layout_height="match_parent" />
 
-    <androidx.core.widget.NestedScrollView
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_height="?attr/actionBarSize"
+        android:background="#440F1930"
+        app:title="Network Diagnostics"
+        app:titleTextColor="@android:color/white"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="20dp">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/surface_container_low"
                 app:cardCornerRadius="20dp"
-                app:strokeWidth="0dp">
+                app:cardBackgroundColor="#220F1930"
+                android:layout_marginBottom="24dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -40,15 +43,16 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/dns_desc"
-                        android:textColor="@color/on_surface_variant"
+                        android:text="Execute global probes to benchmark resolution latency across enterprise providers."
+                        android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/startTestButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="@string/run_benchmarks" />
+                        android:text="Execute Global Probe"
+                        app:backgroundTint="@color/emerald_accent" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -56,25 +60,23 @@
                 android:id="@+id/latencyRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:nestedScrollingEnabled="false" />
+                android:nestedScrollingEnabled="false"
+                android:layout_marginBottom="24dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="@string/manual_lookup"
-                android:textColor="@color/primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:text="Manual Probe"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="12dp" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/surface_container_low"
                 app:cardCornerRadius="20dp"
-                app:strokeWidth="0dp">
+                app:cardBackgroundColor="#220F1930">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -83,12 +85,16 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:hint="Host Identifier (e.g. google.com)"
+                        app:boxBackgroundColor="#220F1930"
+                        app:boxStrokeColor="@color/emerald_accent"
+                        app:hintTextColor="@color/emerald_accent"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/manualLookupInput"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Host (e.g. google.com)" />
+                            android:textColor="@android:color/white" />
                     </com.google.android.material.textfield.TextInputLayout>
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -102,7 +108,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginEnd="4dp"
-                            android:text="@string/ping" />
+                            android:text="Probe" />
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/lookupBtn"
                             style="@style/Widget.Material3.Button.TonalButton"
@@ -110,30 +116,30 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="4dp"
-                            android:text="@string/resolve" />
+                            android:text="Resolve" />
                     </LinearLayout>
                     <TextView
                         android:id="@+id/manualResultText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:textColor="@color/on_surface"
+                        android:textColor="@android:color/white"
                         android:textSize="12sp"
                         android:fontFamily="monospace" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <View android:layout_width="match_parent" android:layout_height="100dp" />
-
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </ScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/surface"
+        android:background="@color/emerald_card_bg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:itemIconTint="@color/nav_item_selector"
+        app:itemTextColor="@color/nav_item_selector"
         app:menu="@menu/bottom_nav_menu" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

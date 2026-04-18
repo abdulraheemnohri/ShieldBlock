@@ -1,155 +1,144 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background">
+    android:layout_height="match_parent">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <com.example.shieldblock.ui.AuraBackgroundView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="@string/visual_analytics" />
-    </com.google.android.material.appbar.AppBarLayout>
+        android:layout_height="match_parent" />
 
-    <androidx.core.widget.NestedScrollView
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_height="?attr/actionBarSize"
+        android:background="#440F1930"
+        app:title="Aegis Intel"
+        app:titleTextColor="@android:color/white"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="20dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/blocking_trend"
-                android:textColor="@color/primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:text="Intelligence Radar"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="16dp" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/surface_container_low"
-                app:cardCornerRadius="20dp"
-                app:strokeWidth="0dp">
+                android:layout_height="220dp"
+                app:cardCornerRadius="24dp"
+                app:cardBackgroundColor="#220F1930"
+                app:strokeWidth="1dp"
+                app:strokeColor="#4486FEA7"
+                android:layout_marginBottom="24dp">
+                <com.example.shieldblock.ui.ThreatRadarView
+                    android:id="@+id/threatRadar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="20dp" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mitigation Trend"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="16dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                app:cardCornerRadius="24dp"
+                app:cardBackgroundColor="#220F1930"
+                app:strokeWidth="1dp"
+                app:strokeColor="#22FFFFFF"
+                android:layout_marginBottom="24dp">
                 <LinearLayout
                     android:id="@+id/chartContainer"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="16dp"
                     android:orientation="horizontal"
+                    android:padding="20dp"
                     android:gravity="bottom" />
             </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="@string/realtime_performance"
-                android:textColor="@color/primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.card.MaterialCardView
+            <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/surface_container_low"
-                app:cardCornerRadius="20dp"
-                app:strokeWidth="0dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
+                android:columnCount="2"
+                android:alignmentMode="alignMargins"
+                android:columnOrderPreserved="false"
+                android:layout_marginBottom="24dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-                    <TextView
-                        android:id="@+id/throughputText"
-                        android:layout_width="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="#220F1930">
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Throughput: 0 KB/s"
-                        android:textColor="@color/on_surface"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:id="@+id/batteryUsageText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Minimal Power Impact"
-                        android:textColor="@color/secondary"
-                        android:textSize="14sp"
-                        android:layout_marginTop="4dp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:id="@+id/totalQueriesText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 Requests" android:textColor="@android:color/white" android:textSize="16sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/blockPercentageText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0% Mitigated" android:textColor="@color/emerald_accent" android:textSize="11sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="@string/summary_stats"
-                android:textColor="@color/primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/surface_container_low"
-                app:cardCornerRadius="20dp"
-                app:strokeWidth="0dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-                    <TextView
-                        android:id="@+id/totalQueriesText"
-                        android:layout_width="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardBackgroundColor="#220F1930">
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Total Queries: 0"
-                        android:textColor="@color/on_surface" />
-                    <TextView
-                        android:id="@+id/blockPercentageText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Protection Rate: 0%"
-                        android:textColor="@color/on_surface" />
-                    <TextView
-                        android:id="@+id/peakHourText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Peak Activity: --:00"
-                        android:textColor="@color/on_surface" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:id="@+id/throughputText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 KB/s" android:textColor="@android:color/white" android:textSize="16sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/batteryUsageText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Efficient Path" android:textColor="@color/text_secondary" android:textSize="11sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </GridLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="@string/top_blocking_apps"
-                android:textColor="@color/primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:text="Intrusion Points"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="16dp" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardBackgroundColor="@color/surface_container_low"
                 app:cardCornerRadius="20dp"
-                app:strokeWidth="0dp">
+                app:cardBackgroundColor="#220F1930"
+                app:strokeWidth="1dp"
+                app:strokeColor="#11FFFFFF"
+                android:layout_marginBottom="24dp">
                 <LinearLayout
                     android:id="@+id/topAppsContainer"
                     android:layout_width="match_parent"
@@ -160,31 +149,31 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/openSecurityAuditBtn"
-                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="@string/run_audit" />
+                android:text="Execute Deep Audit"
+                app:cornerRadius="12dp"
+                app:backgroundTint="@color/emerald_accent"
+                android:layout_marginBottom="12dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/openSnifferBtn"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/open_sniffer" />
-
-            <View android:layout_width="match_parent" android:layout_height="100dp" />
+                android:text="Live Packet Sniffer" />
 
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </ScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/surface"
+        android:background="@color/emerald_card_bg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:itemIconTint="@color/nav_item_selector"
+        app:itemTextColor="@color/nav_item_selector"
         app:menu="@menu/bottom_nav_menu" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

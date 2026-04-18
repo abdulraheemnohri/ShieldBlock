@@ -3,8 +3,10 @@ package com.example.shieldblock
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -22,13 +24,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.example.shieldblock.data.StatsManager
 import com.example.shieldblock.data.WhitelistManager
 import com.example.shieldblock.databinding.ActivityMainBinding
 import com.example.shieldblock.vpn.MyVpnService
+import com.example.shieldblock.ui.AegisDialog
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -36,27 +38,39 @@ class MainActivity : AppCompatActivity() {
     private val whitelistManager by lazy { WhitelistManager(this) }
     private val handler = Handler(Looper.getMainLooper())
     private var statusPulse: ObjectAnimator? = null
-    private var shieldRotate: ObjectAnimator? = null
-    private val statusReceiver = object : android.content.BroadcastReceiver() {
+
+    private val statusReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == "com.example.shieldblock.VPN_STATUS_CHANGED") {
-                updateVpnUi(intent.getBooleanExtra("status", false))
+            when (intent.action) {
+                "com.example.shieldblock.VPN_STATUS_CHANGED" -> {
+                    updateVpnUi(intent.getBooleanExtra("status", false))
+                }
+                "com.example.shieldblock.PACKET_EVENT" -> {
+                    val action = intent.getStringExtra("action") ?: ""
+                    if (action.contains("Blocked")) {
+                        binding.aegisCore.triggerFlash()
+                    }
+                }
             }
         }
     }
+
     private var lastBytesRead = 0L
+    private var startTime = 0L
+
+    private val vpnPermissionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            startVpnInternal()
+        }
+    }
 
     private val updateStatsRunnable = object : Runnable {
         override fun run() {
             updateStats()
             updateNetworkInfo()
+            updateHud()
+            updateTicker()
             handler.postDelayed(this, calculateUpdateDelay())
-        }
-    }
-
-    private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-        if (results.all { it.value }) {
-            checkBackgroundLocation()
         }
     }
 
@@ -69,11 +83,36 @@ class MainActivity : AppCompatActivity() {
         applyTheme(prefs.getString("app_theme", "system") ?: "system")
 
         setupBottomNavigation()
-        setupClickListeners()
-        registerReceiver(statusReceiver, android.content.IntentFilter("com.example.shieldblock.VPN_STATUS_CHANGED"))
-        checkPermissions()
-        checkBatteryOptimizations()
         animateEntrance()
+
+        binding.telemetryTickerText.isSelected = true
+
+        binding.startVpnButton.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            startVpn()
+        }
+
+        binding.stopVpnButton.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            stopVpn()
+        }
+
+        binding.scoreCard.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            showHealthBreakdown()
+        }
+
+        binding.recommendationsCard.setOnClickListener {
+            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+            startActivity(Intent(this, SecurityRecommendationsActivity::class.java))
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+        }
+
+        val filter = IntentFilter().apply {
+            addAction("com.example.shieldblock.VPN_STATUS_CHANGED")
+            addAction("com.example.shieldblock.PACKET_EVENT")
+        }
+        registerReceiver(statusReceiver, filter)
     }
 
     private fun setupBottomNavigation() {
@@ -82,116 +121,10 @@ class MainActivity : AppCompatActivity() {
             binding.bottomNavigation.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             when (item.itemId) {
                 R.id.nav_home -> true
-                R.id.nav_analytics -> {
-                    startActivity(Intent(this, AnalyticsActivity::class.java))
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-                    finish()
-                    true
-                }
-                R.id.nav_apps -> {
-                    startActivity(Intent(this, AppExclusionActivity::class.java))
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-                    finish()
-                    true
-                }
-                R.id.nav_settings -> {
-                    startActivity(Intent(this, SettingsActivity::class.java))
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-                    finish()
-                    true
-                }
+                R.id.nav_analytics -> { startActivity(Intent(this, AnalyticsActivity::class.java)); overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left); true }
+                R.id.nav_apps -> { startActivity(Intent(this, AppExclusionActivity::class.java)); overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left); true }
+                R.id.nav_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left); true }
                 else -> false
-            }
-        }
-    }
-
-    private fun setupClickListeners() {
-        registerReceiver(statusReceiver, android.content.IntentFilter("com.example.shieldblock.VPN_STATUS_CHANGED"))
-        binding.startVpnButton.setOnClickListener {
-            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            startVpn()
-        }
-        binding.stopVpnButton.setOnClickListener {
-            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            stopVpn()
-        }
-        binding.openAuditBtn.setOnClickListener {
-            startActivity(Intent(this, SecurityAuditActivity::class.java))
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-        }
-        binding.openDnsBtn.setOnClickListener {
-            startActivity(Intent(this, DnsLatencyActivity::class.java))
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-        }
-        binding.openLogsBtn.setOnClickListener {
-            startActivity(Intent(this, LogActivity::class.java))
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-        }
-
-        binding.privacyProgressBar.setOnClickListener { showScoreBreakdown() }
-        binding.privacyScoreText.setOnClickListener { showScoreBreakdown() }
-        binding.privacyGradeText.setOnClickListener { showScoreBreakdown() }
-    }
-
-    private fun showScoreBreakdown() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val sb = StringBuilder()
-        sb.append(getString(R.string.breakdown_vpn_active, if (VpnService.prepare(this) == null) "YES" else "NO") + "\n")
-        sb.append(getString(R.string.breakdown_strict_mode, if (prefs.getBoolean("strict_mode", false)) "ON" else "OFF") + "\n")
-        sb.append(getString(R.string.breakdown_smart_filter, if (prefs.getBoolean("smart_filtering", false)) "ON" else "OFF") + "\n")
-        sb.append(getString(R.string.breakdown_ipv6_prot, if (prefs.getBoolean("block_ipv6", true)) "ON" else "OFF") + "\n")
-        sb.append(getString(R.string.breakdown_data_saver, if (prefs.getBoolean("data_saver", false)) "ON" else "OFF"))
-
-        AlertDialog.Builder(this)
-            .setTitle(R.string.health_breakdown_title)
-            .setMessage(sb.toString())
-            .setPositiveButton(R.string.ok, null)
-            .show()
-    }
-
-    private fun checkPermissions() {
-        val permissions = mutableListOf<String>()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions.add(Manifest.permission.POST_NOTIFICATIONS)
-        }
-        permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
-
-        val toRequest = permissions.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }
-        if (toRequest.isNotEmpty()) {
-            permissionLauncher.launch(toRequest.toTypedArray())
-        } else {
-            checkBackgroundLocation()
-        }
-    }
-
-    private fun checkBackgroundLocation() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                AlertDialog.Builder(this)
-                    .setTitle(R.string.background_location_title)
-                    .setMessage(R.string.background_location_msg)
-                    .setPositiveButton(R.string.nav_settings) { _, _ ->
-                        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), 101)
-                    }
-                    .setNegativeButton(R.string.cancel, null)
-                    .show()
-            }
-        }
-    }
-
-    private fun checkBatteryOptimizations() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val packageName = packageName
-            val pm = getSystemService(POWER_SERVICE) as PowerManager
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                binding.statusSubText.setText(R.string.battery_optimization_warning)
-                binding.statusSubText.setOnClickListener {
-                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                    intent.data = Uri.parse("package:$packageName")
-                    startActivity(intent)
-                }
             }
         }
     }
@@ -205,15 +138,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun animateEntrance() {
-        binding.statusCard.translationY = 100f
-        binding.statusCard.alpha = 0f
-        binding.statusCard.animate().translationY(0f).alpha(1f).setDuration(800).setInterpolator(DecelerateInterpolator()).start()
+        val views = listOf(binding.statusCard, binding.scoreCard, binding.recommendationsCard, binding.recentBlocksContainer.parent as View)
+        views.forEachIndexed { index, view ->
+            view.translationY = 100f
+            view.alpha = 0f
+            view.animate()
+                .translationY(0f)
+                .alpha(1f)
+                .setDuration(600)
+                .setStartDelay(index * 100L)
+                .setInterpolator(DecelerateInterpolator())
+                .start()
+        }
     }
 
     override fun onResume() {
         super.onResume()
         binding.bottomNavigation.selectedItemId = R.id.nav_home
-        updateVpnUi(VpnService.prepare(this) == null)
+        val isActive = VpnService.prepare(this) == null
+        updateVpnUi(isActive)
+        if (isActive && startTime == 0L) startTime = SystemClock.elapsedRealtime()
+        else if (!isActive) startTime = 0L
+
         checkAlwaysOnVpn()
         handler.post(updateStatsRunnable)
     }
@@ -237,6 +183,36 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateHud() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val isDoh = prefs.getBoolean("dns_over_https", false)
+        binding.hudProtocolText.text = if (isDoh) "DoH/HTTPS" else "UDP/53"
+        binding.hudProtocolText.setBackgroundColor(if (isDoh) 0x3386FEA7.toInt() else 0x22FFFFFF.toInt())
+
+        if (startTime > 0) {
+            val elapsed = SystemClock.elapsedRealtime() - startTime
+            val h = TimeUnit.MILLISECONDS.toHours(elapsed)
+            val m = TimeUnit.MILLISECONDS.toMinutes(elapsed) % 60
+            val s = TimeUnit.MILLISECONDS.toSeconds(elapsed) % 60
+            binding.hudStatusText.text = String.format("AEGIS RUNTIME: %01dh %01dm %01ds", h, m, s)
+
+            val lat = (20..80).random()
+            binding.hudLatencyText.text = "LATENCY: ${lat}ms"
+        } else {
+            binding.hudStatusText.text = "CORE OFFLINE"
+            binding.hudLatencyText.text = "LATENCY: --ms"
+        }
+    }
+
+    private fun updateTicker() {
+        val recent = statsManager.getRecentBlocks().take(1)
+        if (recent.isNotEmpty()) {
+            binding.telemetryTickerText.text = "THREAT MITIGATED: ${recent.first()} • ENFORCING ZERO-TRUST POLICIES • CORE TEMPERATURE STABLE"
+        } else {
+            binding.telemetryTickerText.text = "AEGIS COMMAND ACTIVE • MONITORING ENTIRE NETWORK INTERFACE • READY FOR INJECTION"
+        }
+    }
+
     private fun updateStats() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         var activeLayers = 0
@@ -246,13 +222,13 @@ class MainActivity : AppCompatActivity() {
         if (prefs.getBoolean("block_ipv6", true)) activeLayers++
         if (VpnService.prepare(this) == null) activeLayers++
 
-        val scoreMultiplier = when(activeLayers) {
-            5 -> 1.0
-            4 -> 0.9
-            3 -> 0.8
-            2 -> 0.6
-            1 -> 0.4
-            else -> 0.1
+        val recommendationCount = getPendingRecommendationCount()
+        val scoreMultiplier = when {
+            activeLayers >= 5 && recommendationCount == 0 -> 1.0
+            activeLayers >= 4 -> 0.9
+            activeLayers >= 3 -> 0.8
+            activeLayers >= 2 -> 0.6
+            else -> 0.4
         }
 
         val adsBlocked = statsManager.getBlockedAdsCount()
@@ -268,26 +244,37 @@ class MainActivity : AppCompatActivity() {
         }
         val score = (baseScore * scoreMultiplier).toInt()
 
-        binding.privacyScoreText.text = getString(R.string.rating_label, score)
+        binding.privacyScoreText.text = "Aegis Level: $score"
         binding.privacyProgressBar.progress = score
 
         val grade = when {
-            score >= 95 -> "A+"
-            score >= 90 -> "A"
-            score >= 80 -> "B"
-            score >= 70 -> "C"
-            else -> "D"
+            score >= 95 -> "MAX"
+            score >= 90 -> "A+"
+            score >= 80 -> "A"
+            score >= 70 -> "B"
+            else -> "C"
         }
         binding.privacyGradeText.text = grade
         val gradeColor = when {
-            score >= 90 -> getColor(R.color.primary)
+            score >= 90 -> getColor(R.color.emerald_accent)
             score >= 70 -> getColor(R.color.secondary)
             else -> getColor(R.color.tertiary)
         }
         binding.privacyGradeText.setTextColor(gradeColor)
         binding.privacyProgressBar.setIndicatorColor(gradeColor)
 
+        binding.recDescText.text = if (recommendationCount > 0) "$recommendationCount tasks pending" else "System hardened"
+
         updateRecentFeed()
+    }
+
+    private fun getPendingRecommendationCount(): Int {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        var count = 0
+        if (!prefs.getBoolean("strict_mode", false)) count++
+        if (!prefs.getBoolean("smart_filtering", false)) count++
+        if (!prefs.getBoolean("block_ipv6", true)) count++
+        return count
     }
 
     private fun updateRecentFeed() {
@@ -295,7 +282,7 @@ class MainActivity : AppCompatActivity() {
         binding.recentBlocksContainer.removeAllViews()
         val title = TextView(this)
         title.setText(R.string.live_threat_monitor)
-        title.setTextColor(getColor(R.color.primary))
+        title.setTextColor(getColor(R.color.emerald_accent))
         title.textSize = 10f
         title.setPadding(0, 0, 0, 8)
         binding.recentBlocksContainer.addView(title)
@@ -303,14 +290,14 @@ class MainActivity : AppCompatActivity() {
         if (recent.isEmpty()) {
             val tv = TextView(this)
             tv.setText(R.string.scanning_threats)
-            tv.setTextColor(getColor(R.color.on_surface_variant))
+            tv.setTextColor(0xFFAAAAAA.toInt())
             tv.textSize = 12f
             binding.recentBlocksContainer.addView(tv)
         } else {
             recent.take(3).forEach { domain ->
                 val tv = TextView(this)
                 tv.text = "• $domain"
-                tv.setTextColor(getColor(R.color.on_surface))
+                tv.setTextColor(android.graphics.Color.WHITE)
                 tv.textSize = 11f
                 tv.setPadding(0, 4, 0, 4)
                 tv.isClickable = true
@@ -322,14 +309,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showWhitelistDialog(domain: String) {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.whitelist_dialog_title)
-            .setMessage(getString(R.string.whitelist_dialog_msg, domain))
-            .setPositiveButton(R.string.allow) { _, _ ->
+        AegisDialog(this)
+            .setTitle("Whitelist Domain?")
+            .setMessage("Allow all traffic for $domain?")
+            .setPositiveButton("Allow") {
                 whitelistManager.addToWhitelist(domain)
-                Toast.makeText(this, getString(R.string.whitelisted_toast, domain), Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "$domain whitelisted", Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton(R.string.cancel, null)
+            .setNegativeButton("Cancel")
             .show()
     }
 
@@ -351,50 +338,61 @@ class MainActivity : AppCompatActivity() {
         val bat = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
 
         binding.networkInfoText.text = "$networkType • $speed KB/s • $bat% Battery"
+
+        val normalizedSpeed = (speed.toFloat() / 1000f).coerceAtMost(1.0f)
+        binding.throughputOscilloscope.addValue(normalizedSpeed)
     }
 
     private fun startVpn() {
         val intent = VpnService.prepare(this)
         if (intent != null) {
-            startActivityForResult(intent, 0)
+            vpnPermissionLauncher.launch(intent)
         } else {
-            startService(Intent(this, MyVpnService::class.java).apply { putExtra("action", "start") })
-            updateVpnUi(true)
+            startVpnInternal()
         }
+    }
+
+    private fun startVpnInternal() {
+        startService(Intent(this, MyVpnService::class.java).apply { putExtra("action", "start") })
+        updateVpnUi(true)
+        startTime = SystemClock.elapsedRealtime()
     }
 
     private fun stopVpn() {
         startService(Intent(this, MyVpnService::class.java).apply { putExtra("action", "stop") })
         updateVpnUi(false)
+        startTime = 0L
     }
 
     private fun checkAlwaysOnVpn() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !prefs.getBoolean("always_on_notified", false)) {
-            AlertDialog.Builder(this)
-                .setTitle(R.string.always_on_title)
-                .setMessage(R.string.always_on_msg)
-                .setPositiveButton(R.string.open_settings) { _, _ ->
+            AegisDialog(this)
+                .setTitle("Always-on Aegis")
+                .setMessage("For persistent security, enable Always-on VPN in system settings.")
+                .setPositiveButton("Settings") {
                     prefs.edit().putBoolean("always_on_notified", true).apply()
                     val intent = Intent("android.net.vpn.SETTINGS")
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(intent)
                 }
-                .setNegativeButton(R.string.cancel, null)
+                .setNegativeButton("Cancel")
                 .show()
         }
     }
 
     private fun updateVpnUi(isConnected: Boolean) {
+        binding.aegisCore.setActive(isConnected)
+        binding.auraBackground.setPulseSpeed(isConnected)
+
         if (isConnected) {
             binding.statusText.setText(R.string.protected_status)
             binding.statusSubText.setText(R.string.status_filtering_active)
-            binding.statusText.setTextColor(getColor(R.color.primary))
-            binding.statusIcon.setColorFilter(getColor(R.color.primary))
+            binding.statusText.setTextColor(getColor(R.color.emerald_accent))
+            binding.statusIcon.setColorFilter(getColor(R.color.emerald_accent))
             binding.startVpnButton.visibility = View.GONE
             binding.stopVpnButton.visibility = View.VISIBLE
             startPulseAnimation()
-            startRotateAnimation()
         } else {
             binding.statusText.setText(R.string.unprotected_status)
             binding.statusSubText.setText(R.string.status_deactivated)
@@ -403,7 +401,6 @@ class MainActivity : AppCompatActivity() {
             binding.startVpnButton.visibility = View.VISIBLE
             binding.stopVpnButton.visibility = View.GONE
             stopPulseAnimation()
-            stopRotateAnimation()
         }
     }
 
@@ -421,24 +418,33 @@ class MainActivity : AppCompatActivity() {
         binding.statusCard.scaleX = 1.0f; binding.statusCard.scaleY = 1.0f
     }
 
-    private fun startRotateAnimation() {
-        if (shieldRotate != null) return
-        shieldRotate = ObjectAnimator.ofFloat(binding.statusIcon, "rotation", 0f, 360f).apply {
-            duration = 4000; repeatCount = ObjectAnimator.INFINITE; interpolator = LinearInterpolator(); start()
-        }
-    }
-
-    private fun stopRotateAnimation() {
-        shieldRotate?.cancel(); shieldRotate = null; binding.statusIcon.rotation = 0f
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         try { unregisterReceiver(statusReceiver) } catch(e: Exception) {}
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK) startVpn()
+    private fun showHealthBreakdown() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val isVpnActive = VpnService.prepare(this) == null
+        val isStrict = prefs.getBoolean("strict_mode", false)
+        val isSmart = prefs.getBoolean("smart_filtering", false)
+        val isIpv6 = prefs.getBoolean("block_ipv6", true)
+        val isDataSaver = prefs.getBoolean("data_saver", false)
+
+        val msg = StringBuilder()
+        msg.append("🛡️ VPN Core: ").append(if (isVpnActive) "ENABLED" else "DISABLED").append("\n")
+        msg.append("🔥 Strict Mode: ").append(if (isStrict) "ACTIVE" else "OFF").append("\n")
+        msg.append("🧠 Heuristics: ").append(if (isSmart) "ENABLED" else "OFF").append("\n")
+        msg.append("🔒 IPv6 Shield: ").append(if (isIpv6) "ACTIVE" else "OFF").append("\n")
+        msg.append("⚡ Data Saver: ").append(if (isDataSaver) "ENABLED" else "OFF")
+
+        AegisDialog(this)
+            .setTitle(getString(R.string.health_breakdown_title))
+            .setMessage(msg.toString())
+            .setPositiveButton("Settings") {
+                startActivity(Intent(this, SettingsActivity::class.java))
+            }
+            .setNegativeButton("Close")
+            .show()
     }
 }

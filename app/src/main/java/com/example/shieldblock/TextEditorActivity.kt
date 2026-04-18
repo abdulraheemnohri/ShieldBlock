@@ -70,14 +70,14 @@ class TextEditorActivity : AppCompatActivity() {
         filePath?.let {
             val file = File(it)
             if (file.exists()) {
-                binding.fileEditText.setText(file.readText())
+                binding.rulesEditText.setText(file.readText())
             }
         }
     }
 
     private fun saveFile() {
         filePath?.let {
-            val content = binding.fileEditText.text.toString()
+            val content = binding.rulesEditText.text.toString()
             File(it).writeText(content)
             Toast.makeText(this, "Changes saved", Toast.LENGTH_SHORT).show()
         }

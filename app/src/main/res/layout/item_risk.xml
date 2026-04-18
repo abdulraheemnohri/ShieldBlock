@@ -5,8 +5,8 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
     app:cardCornerRadius="12dp"
-    app:cardBackgroundColor="@color/emerald_card_bg"
-    app:strokeColor="#44FF4444"
+    app:cardBackgroundColor="#22000000"
+    app:strokeColor="#66FF5555"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <TextView
@@ -28,7 +28,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#FFBBBB"
-            android:textSize="12sp"
-            android:layout_marginTop="4dp" />
+            android:textSize="10sp"
+            android:layout_marginTop="4dp"
+            android:fontFamily="monospace" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

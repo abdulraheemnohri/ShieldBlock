@@ -1,26 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background">
+    android:layout_height="match_parent">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <com.example.shieldblock.ui.AuraBackgroundView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="@string/blocklist_sources" />
-    </com.google.android.material.appbar.AppBarLayout>
+        android:layout_height="match_parent" />
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#440F1930"
+        app:title="Aegis Sources"
+        app:titleTextColor="@android:color/white"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/sourceHeaderLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -31,17 +34,16 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/add_url"
+                android:text="Remote URL"
                 android:layout_marginEnd="8dp"
-                app:icon="@android:drawable/ic_menu_add" />
+                app:backgroundTint="@color/emerald_accent" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/uploadFileBtn"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/upload_file"
-                style="@style/Widget.Material3.Button.TonalButton"
-                app:icon="@android:drawable/ic_menu_upload" />
+                android:text="Local File"
+                style="@style/Widget.Material3.Button.TonalButton" />
         </LinearLayout>
 
         <HorizontalScrollView
@@ -53,46 +55,46 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/selectAllBtn"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/enable_all"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:textSize="12sp" />
-                <Button
+                    android:text="Activate All"
+                    android:textColor="@android:color/white" />
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/selectNoneBtn"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/disable_all"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:textSize="12sp" />
-                <Button
+                    android:text="Deactivate All"
+                    android:textColor="@android:color/white" />
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/resetSourcesBtn"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/reset"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:textColor="@color/secondary"
-                    android:textSize="12sp" />
+                    android:text="Factory Rules"
+                    android:textColor="@color/emerald_accent" />
             </LinearLayout>
         </HorizontalScrollView>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/sourceRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginTop="8dp" />
-
     </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sourceRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/sourceHeaderLayout"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/surface"
+        android:background="@color/emerald_card_bg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:itemIconTint="@color/nav_item_selector"
+        app:itemTextColor="@color/nav_item_selector"
         app:menu="@menu/bottom_nav_menu" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

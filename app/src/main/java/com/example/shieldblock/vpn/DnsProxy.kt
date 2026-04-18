@@ -30,6 +30,7 @@ class DnsProxy(private val vpnFd: ParcelFileDescriptor, private val service: MyV
     private var dataSaver = false
     private var blockIpv6 = true
     private var logAllQueries = false
+    private var dnsOverHttps = false
 
     private var totalBytesRead = 0L
     private var totalBytesWritten = 0L
@@ -49,6 +50,7 @@ class DnsProxy(private val vpnFd: ParcelFileDescriptor, private val service: MyV
         dataSaver = prefs.getBoolean("data_saver", false)
         blockIpv6 = prefs.getBoolean("block_ipv6", true)
         logAllQueries = prefs.getBoolean("log_all_queries", false)
+        dnsOverHttps = prefs.getBoolean("dns_over_https", false)
 
         synchronized(customRules) {
             customRules.clear()
@@ -168,7 +170,10 @@ class DnsProxy(private val vpnFd: ParcelFileDescriptor, private val service: MyV
             statsManager.incrementSafeQueries()
             broadcastEvent(domain, "Allowed ($qTypeName)")
             val latency = forwardDns(dnsData, socket, outputStream, sourceIP, sourcePort, destIP)
-            if (logAllQueries) eventLogger.logEvent("Query: $domain ($qTypeName) -> ALLOWED via $customDnsServer [${latency}ms]")
+            if (logAllQueries) {
+                val path = if (dnsOverHttps) "SECURE (DoH)" else customDnsServer
+                eventLogger.logEvent("Query: $domain ($qTypeName) -> ALLOWED via $path [${latency}ms]")
+            }
         }
     }
 

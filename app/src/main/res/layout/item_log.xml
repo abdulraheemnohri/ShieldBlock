@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="16dp"
+    android:layout_marginHorizontal="12dp"
     android:layout_marginVertical="4dp"
-    app:cardBackgroundColor="@color/surface_container_low"
     app:cardCornerRadius="12dp"
+    app:cardBackgroundColor="#220F1930"
     app:strokeWidth="0dp">
 
     <LinearLayout
@@ -15,30 +15,40 @@
         android:orientation="vertical"
         android:padding="12dp">
 
-        <TextView
-            android:id="@+id/logTimestamp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/on_surface_variant"
-            android:textSize="10sp" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/logTimestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#66FFFFFF"
+                android:textSize="9sp"
+                android:fontFamily="monospace" />
+            <TextView
+                android:id="@+id/logLatency"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:textColor="@color/emerald_accent"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/logContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/on_surface"
-            android:textSize="14sp"
-            android:layout_marginTop="4dp"
-            android:textStyle="bold" />
+            android:layout_marginTop="6dp"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:fontFamily="monospace" />
 
-        <TextView
-            android:id="@+id/logLatency"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/primary"
-            android:textSize="10sp"
-            android:layout_marginTop="2dp"
-            android:visibility="gone" />
-
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#11FFFFFF"
+            android:layout_marginTop="8dp" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

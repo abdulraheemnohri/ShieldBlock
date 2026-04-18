@@ -1,25 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="16dp"
-    android:gravity="center_vertical">
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardBackgroundColor="#220F1930"
+    app:strokeWidth="0dp">
 
-    <TextView
-        android:id="@+id/domainText"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textColor="@color/on_surface"
-        android:textSize="14sp" />
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical">
 
-    <Button
-        android:id="@+id/whitelistActionBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Allow"
-        style="@style/Widget.Material3.Button.TextButton"
-        android:textColor="@color/primary" />
+        <TextView
+            android:id="@+id/domainText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@android:color/white"
+            android:textSize="13sp"
+            android:fontFamily="monospace" />
 
-</LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/whitelistActionBtn"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AUTHORIZE"
+            android:textColor="@color/emerald_accent"
+            android:textSize="10sp"
+            android:padding="0dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
