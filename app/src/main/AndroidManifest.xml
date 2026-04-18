@@ -17,7 +17,7 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="Aegis Ultra"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ShieldBlock">
@@ -85,6 +85,7 @@
         <activity android:name=".SecurityAuditActivity" android:label="Security Audit" />
         <activity android:name=".NetworkSnifferActivity" android:label="Network Sniffer" />
 
+        <activity android:name=".SecurityRecommendationsActivity" android:label="Hardening Tasks" />
     </application>
 
 </manifest>

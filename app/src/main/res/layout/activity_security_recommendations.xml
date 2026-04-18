@@ -13,43 +13,23 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="#440F1930"
-        app:title="Source Configuration"
+        app:title="Hardening Tasks"
         app:titleTextColor="@android:color/white"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.card.MaterialCardView
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="20dp"
-        app:cardBackgroundColor="#220F1930"
-        app:strokeWidth="1dp"
-        app:strokeColor="#22FFFFFF"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toTopOf="@id/saveBtn">
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
 
-        <EditText
-            android:id="@+id/rulesEditText"
+        <LinearLayout
+            android:id="@+id/recommendationsContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="16dp"
-            android:background="@android:color/transparent"
-            android:gravity="top"
-            android:textColor="@android:color/white"
-            android:textSize="14sp"
-            android:fontFamily="monospace"
-            android:inputType="textMultiLine" />
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/saveBtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="Apply Changes"
-        app:cornerRadius="12dp"
-        app:backgroundTint="@color/emerald_accent"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp" />
+    </ScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"

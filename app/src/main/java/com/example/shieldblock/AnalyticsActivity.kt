@@ -1,6 +1,9 @@
 package com.example.shieldblock
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -27,23 +30,41 @@ class AnalyticsActivity : AppCompatActivity() {
         }
     }
 
+    private val packetReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.getStringExtra("action") ?: ""
+            binding.threatRadar.addThreat(action.contains("Blocked"))
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAnalyticsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+        }
 
         setupBottomNavigation()
         loadStaticStats()
 
         binding.openSecurityAuditBtn.setOnClickListener {
             it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            startActivity(Intent(this, SecurityAuditActivity::class.java)); overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            startActivity(Intent(this, SecurityAuditActivity::class.java))
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }
 
         binding.openSnifferBtn.setOnClickListener {
             it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            startActivity(Intent(this, NetworkSnifferActivity::class.java)); overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            startActivity(Intent(this, NetworkSnifferActivity::class.java))
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }
+
+        registerReceiver(packetReceiver, IntentFilter("com.example.shieldblock.PACKET_EVENT"))
     }
 
     private fun setupBottomNavigation() {
@@ -65,14 +86,11 @@ class AnalyticsActivity : AppCompatActivity() {
         val blocked = statsManager.getBlockedAdsCount()
         val ratio = if (total > 0) (blocked.toFloat() / total.toFloat() * 100).toInt() else 0
 
-        binding.blockPercentageText.text = getString(R.string.blocked_ratio, ratio)
-        binding.totalQueriesText.text = getString(R.string.total_queries, total)
+        binding.blockPercentageText.text = "$ratio% Mitigated"
+        binding.totalQueriesText.text = "$total Requests"
 
         val hourly = statsManager.getHourlyStats()
         val maxBlocks = hourly.values.maxOrNull() ?: 1
-
-        val peakHour = hourly.maxByOrNull { it.value }?.key ?: 0
-        binding.peakHourText.text = getString(R.string.peak_activity, peakHour)
 
         drawChart(hourly, maxBlocks)
         loadTopApps()
@@ -84,8 +102,8 @@ class AnalyticsActivity : AppCompatActivity() {
         val speed = if (lastBytesRead > 0) (currentRead - lastBytesRead) / 1024 else 0
         lastBytesRead = currentRead
 
-        binding.throughputText.text = getString(R.string.throughput_label, speed.toString())
-        val impact = if (speed > 500) "Moderate Impact" else "Minimal Power Impact"
+        binding.throughputText.text = "$speed KB/s"
+        val impact = if (speed > 500) "Heavy Load" else "Efficient Path"
         binding.batteryUsageText.text = impact
     }
 
@@ -100,15 +118,15 @@ class AnalyticsActivity : AppCompatActivity() {
 
         if (stats.isEmpty()) {
             val tv = TextView(this)
-            tv.setText(R.string.scanning_threats)
-            tv.setTextColor(getColor(R.color.on_surface_variant))
+            tv.text = "Monitoring intrusion points..."
+            tv.setTextColor(0xFFAAAAAA.toInt())
             binding.topAppsContainer.addView(tv)
         } else {
             stats.forEach { (pkg, count) ->
                 val tv = TextView(this)
                 val label = try { pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)) } catch(e: Exception) { pkg }
-                tv.text = "• $label: $count"
-                tv.setTextColor(getColor(R.color.on_surface))
+                tv.text = "• $label: $count attempts"
+                tv.setTextColor(android.graphics.Color.WHITE)
                 tv.setPadding(0, 8, 0, 8)
                 binding.topAppsContainer.addView(tv)
             }
@@ -124,11 +142,11 @@ class AnalyticsActivity : AppCompatActivity() {
             val maxHeightPx = 200
             val height = (count.toFloat() / max.toFloat() * maxHeightPx).toInt()
 
-            val params = LinearLayout.LayoutParams(0, maxOf(10, height * 2))
+            val params = LinearLayout.LayoutParams(0, Math.max(10, height))
             params.weight = 1f
             params.setMargins(2, 0, 2, 0)
             bar.layoutParams = params
-            bar.setBackgroundColor(if (i == currentHour) getColor(R.color.primary) else getColor(R.color.primary_container))
+            bar.setBackgroundColor(if (i == currentHour) 0xFF86FEA7.toInt() else 0x4486FEA7.toInt())
             binding.chartContainer.addView(bar)
         }
     }
@@ -141,5 +159,10 @@ class AnalyticsActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         handler.removeCallbacks(monitorRunnable)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try { unregisterReceiver(packetReceiver) } catch(e: Exception) {}
     }
 }

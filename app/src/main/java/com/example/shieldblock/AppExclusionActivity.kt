@@ -79,12 +79,6 @@ class AppExclusionActivity : AppCompatActivity() {
             it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
             showGroupMenu()
         }
-        binding.resetExclusionsBtn.setOnClickListener {
-            it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            PreferenceManager.getDefaultSharedPreferences(this).edit().remove(excludedAppsKey).apply()
-            refreshAppsList()
-            Toast.makeText(this, R.string.exclusions_reset_toast, Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun setupBottomNavigation() {
@@ -254,6 +248,7 @@ class AppExclusionActivity : AppCompatActivity() {
             val app = apps[position]
             holder.binding.appName.text = app.name
             holder.binding.packageName.text = "${app.category} • ${app.packageName}"
+            holder.binding.riskBadge.visibility = if (app.isHighRisk) View.VISIBLE else View.GONE
             holder.binding.appIcon.setImageDrawable(app.icon)
             holder.binding.exclusionSwitch.setOnCheckedChangeListener(null)
             holder.binding.exclusionSwitch.isChecked = app.isExcluded

@@ -3,46 +3,35 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="12dp"
-    android:layout_marginVertical="4dp"
-    app:cardCornerRadius="12dp"
-    app:cardBackgroundColor="@color/emerald_card_bg"
-    app:strokeWidth="0dp">
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="2dp"
+    app:cardCornerRadius="4dp"
+    app:cardBackgroundColor="#CC000000"
+    app:strokeWidth="0.5dp"
+    app:strokeColor="#3386FEA7">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="8dp">
 
-        <RelativeLayout
+        <TextView
+            android:id="@+id/packetInfo"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/packetInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/emerald_accent"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:text="INTERCEPTED"
-                android:textColor="#44FFFFFF"
-                android:textSize="8sp"
-                android:textStyle="bold" />
-        </RelativeLayout>
+            android:layout_height="wrap_content"
+            android:textColor="#8886FEA7"
+            android:textSize="9sp"
+            android:fontFamily="monospace" />
 
         <TextView
             android:id="@+id/packetDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="2dp"
             android:textColor="@android:color/white"
-            android:textSize="14sp"
-            android:fontFamily="monospace" />
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:textStyle="bold" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
