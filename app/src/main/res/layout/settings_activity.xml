@@ -32,7 +32,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Aegis Core Layers"
+                android:text="Layer 7 Defense"
                 android:textColor="@android:color/white"
                 android:textStyle="bold"
                 android:textSize="16sp"
@@ -43,8 +43,6 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="20dp"
                 app:cardBackgroundColor="#220F1930"
-                app:strokeWidth="1dp"
-                app:strokeColor="#22FFFFFF"
                 android:layout_marginBottom="24dp">
 
                 <LinearLayout
@@ -99,6 +97,63 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Advanced Protocols"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:cardBackgroundColor="#220F1930"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/stealthModeSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="12dp"
+                        android:text="Stealth Mode"
+                        android:textColor="@android:color/white" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/neuralHeuristicsSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="12dp"
+                        android:text="Neural Heuristics"
+                        android:textColor="@android:color/white" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/quantumProtocolSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="12dp"
+                        android:text="Quantum Cryptography"
+                        android:textColor="@android:color/white" />
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/aegisNodeSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="12dp"
+                        android:text="Aegis HUD Node (Overlay)"
+                        android:textColor="@android:color/white" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="Connectivity &amp; Routing"
                 android:textColor="@android:color/white"
                 android:textStyle="bold"
@@ -110,8 +165,6 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="20dp"
                 app:cardBackgroundColor="#220F1930"
-                app:strokeWidth="1dp"
-                app:strokeColor="#22FFFFFF"
                 android:layout_marginBottom="24dp">
 
                 <LinearLayout
@@ -124,7 +177,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="Upstream DNS Provider"
+                        android:text="Upstream Core Matrix"
                         android:textColor="@android:color/white"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true" />
@@ -136,7 +189,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:padding="16dp"
-                        android:text="Trusted WiFi Networks"
+                        android:text="Trusted WiFi Zones"
                         android:textColor="@android:color/white"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true" />
@@ -147,7 +200,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Aegis Maintenance"
+                android:text="Core Maintenance"
                 android:textColor="@android:color/white"
                 android:textStyle="bold"
                 android:textSize="16sp"
@@ -158,8 +211,6 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="20dp"
                 app:cardBackgroundColor="#220F1930"
-                app:strokeWidth="1dp"
-                app:strokeColor="#22FFFFFF"
                 android:layout_marginBottom="24dp">
 
                 <LinearLayout

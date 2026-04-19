@@ -27,6 +27,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
 import com.example.shieldblock.data.StatsManager
 import com.example.shieldblock.data.WhitelistManager
+import com.example.shieldblock.data.AegisProfileManager
 import com.example.shieldblock.databinding.ActivityMainBinding
 import com.example.shieldblock.vpn.MyVpnService
 import com.example.shieldblock.ui.AegisDialog
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val statsManager by lazy { StatsManager(this) }
     private val whitelistManager by lazy { WhitelistManager(this) }
+    private val profileManager by lazy { AegisProfileManager(this) }
     private val handler = Handler(Looper.getMainLooper())
     private var statusPulse: ObjectAnimator? = null
 
@@ -83,6 +85,7 @@ class MainActivity : AppCompatActivity() {
         applyTheme(prefs.getString("app_theme", "system") ?: "system")
 
         setupBottomNavigation()
+        setupProfileSwitcher()
         animateEntrance()
 
         binding.telemetryTickerText.isSelected = true
@@ -113,6 +116,40 @@ class MainActivity : AppCompatActivity() {
             addAction("com.example.shieldblock.PACKET_EVENT")
         }
         registerReceiver(statusReceiver, filter)
+    }
+
+    private fun setupProfileSwitcher() {
+        binding.profileSwitcherContainer.removeAllViews()
+        val activeId = profileManager.getActiveProfileId()
+
+        profileManager.profiles.forEach { profile ->
+            val chip = com.google.android.material.chip.Chip(this).apply {
+                text = profile.name
+                isCheckable = true
+                isChecked = profile.id == activeId
+                setChipBackgroundColorResource(if (isChecked) android.R.color.white else android.R.color.transparent)
+                setTextColor(if (isChecked) 0xFF060E20.toInt() else android.graphics.Color.WHITE)
+                chipStrokeWidth = 2f
+                chipStrokeColor = android.content.res.ColorStateList.valueOf(profile.color)
+
+                setOnCheckedChangeListener { view, checked ->
+                    if (checked) {
+                        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                        profileManager.applyProfile(profile.id)
+                        setupProfileSwitcher()
+                        if (MyVpnService.instance != null) {
+                            startService(Intent(this@MainActivity, MyVpnService::class.java).apply { putExtra("action", "reload") })
+                        }
+                    }
+                }
+            }
+            val params = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            params.setMargins(8, 0, 8, 0)
+            binding.profileSwitcherContainer.addView(chip, params)
+        }
     }
 
     private fun setupBottomNavigation() {

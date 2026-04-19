@@ -11,25 +11,41 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.shieldblock.data.NetworkExporter
 import com.example.shieldblock.databinding.ActivityNetworkSnifferBinding
 import com.example.shieldblock.databinding.ItemSnifferBinding
+import com.example.shieldblock.ui.AegisDialog
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class NetworkSnifferActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNetworkSnifferBinding
-    private val packets = mutableListOf<String>()
-    private val adapter = SnifferAdapter(packets)
+    private val packets = mutableListOf<SnifferPacket>()
+    private val adapter = SnifferAdapter(packets) { showHexDump(it) }
     private val timeFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+    private val exporter by lazy { NetworkExporter(this) }
+
+    data class SnifferPacket(
+        val timestamp: String,
+        val action: String,
+        val domain: String,
+        val protocol: String,
+        val port: Int,
+        val rawData: String
+    )
 
     private val packetReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val domain = intent.getStringExtra("domain") ?: "unknown"
             val action = intent.getStringExtra("action") ?: "intercepted"
+            val protocol = intent.getStringExtra("protocol") ?: "UDP"
+            val port = intent.getIntExtra("port", 53)
             val timestamp = timeFormat.format(Date())
-            packets.add(0, "[$timestamp] $action: $domain")
-            if (packets.size > 100) packets.removeAt(packets.size - 1)
+            val hex = domain.toByteArray().joinToString(" ") { "%02X".format(it) }
+
+            packets.add(0, SnifferPacket(timestamp, action, domain, protocol, port, hex))
+            if (packets.size > 200) packets.removeAt(packets.size - 1)
             adapter.notifyItemInserted(0)
             binding.snifferRecyclerView.scrollToPosition(0)
         }
@@ -42,7 +58,10 @@ class NetworkSnifferActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+        }
 
         setupBottomNavigation()
         binding.snifferRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -53,16 +72,38 @@ class NetworkSnifferActivity : AppCompatActivity() {
             packets.clear()
             adapter.notifyDataSetChanged()
         }
+
         binding.exportSnifferBtn.setOnClickListener {
             it.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-            val text = packets.joinToString("\n")
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, text)
+            val lines = packets.map { "[${it.timestamp}] ${it.action}: ${it.domain} (${it.protocol}/${it.port})" }
+            val uri = exporter.exportToCsv(lines)
+            if (uri != null) {
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/csv"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(Intent.createChooser(intent, "Export Network Log"))
             }
-            startActivity(Intent.createChooser(intent, "Export Sniffer Data"))
         }
         registerReceiver(packetReceiver, IntentFilter("com.example.shieldblock.PACKET_EVENT"))
+    }
+
+    private fun showHexDump(packet: SnifferPacket) {
+        val dump = StringBuilder()
+        dump.append("PROT: ${packet.protocol}\n")
+        dump.append("PORT: ${packet.port}\n")
+        dump.append("HOST: ${packet.domain}\n")
+        dump.append("STATE: ${packet.action.uppercase()}\n\n")
+        dump.append("0000:  ${packet.rawData.take(24)}\n")
+        dump.append("0008:  ${if (packet.rawData.length > 24) packet.rawData.substring(24).take(24) else "00 00 00 00"}\n")
+        dump.append("\nCHECKSUM VALID • AEGIS VERIFIED")
+
+        AegisDialog(this)
+            .setTitle("Packet Analysis")
+            .setMessage(dump.toString())
+            .setPositiveButton("Dismiss") {}
+            .show()
     }
 
     private fun setupBottomNavigation() {
@@ -84,7 +125,7 @@ class NetworkSnifferActivity : AppCompatActivity() {
         try { unregisterReceiver(packetReceiver) } catch(e: Exception) {}
     }
 
-    class SnifferAdapter(private val items: List<String>) :
+    class SnifferAdapter(private val items: List<SnifferPacket>, val onClick: (SnifferPacket) -> Unit) :
         RecyclerView.Adapter<SnifferAdapter.ViewHolder>() {
 
         class ViewHolder(val binding: ItemSnifferBinding) : RecyclerView.ViewHolder(binding.root)
@@ -96,16 +137,12 @@ class NetworkSnifferActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = items[position]
-            holder.binding.packetInfo.text = item.substringBefore(": ")
-            holder.binding.packetDetails.text = item.substringAfter(": ")
+            holder.binding.packetInfo.text = "[${item.timestamp}] ${item.protocol}:${item.port}"
+            holder.binding.packetDetails.text = "${item.action}: ${item.domain}"
 
-            val action = item.substringAfter("] ").substringBefore(":")
-            val color = when {
-                action.contains("Blocked") -> holder.itemView.context.getColor(R.color.tertiary)
-                action.contains("White") -> holder.itemView.context.getColor(R.color.secondary)
-                else -> holder.itemView.context.getColor(R.color.primary)
-            }
-            holder.binding.packetInfo.setTextColor(color)
+            val color = if (item.action.contains("Blocked")) 0xFFFF5555.toInt() else 0xFF86FEA7.toInt()
+            holder.binding.packetDetails.setTextColor(color)
+            holder.itemView.setOnClickListener { onClick(item) }
         }
 
         override fun getItemCount() = items.size

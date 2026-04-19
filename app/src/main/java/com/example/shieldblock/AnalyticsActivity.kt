@@ -34,6 +34,14 @@ class AnalyticsActivity : AppCompatActivity() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.getStringExtra("action") ?: ""
             binding.threatRadar.addThreat(action.contains("Blocked"))
+
+            val domain = intent.getStringExtra("domain") ?: "unknown"
+            val timestamp = System.currentTimeMillis()
+            val entry = "\n{ \"event\": \"$action\", \"target\": \"$domain\", \"ts\": $timestamp }"
+            val currentText = binding.intelligenceTerminalText.text.toString()
+            val lines = currentText.lines()
+            val newText = if (lines.size > 15) lines.drop(1).joinToString("\n") + entry else currentText + entry
+            binding.intelligenceTerminalText.text = newText
         }
     }
 

@@ -1,11 +1,9 @@
 package com.example.shieldblock.ui
 
-import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
-import android.view.animation.LinearInterpolator
 
 class CoreOscilloscopeView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0

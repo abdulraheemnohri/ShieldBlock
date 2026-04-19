@@ -19,6 +19,7 @@ import com.example.shieldblock.data.WhitelistManager
 import com.example.shieldblock.data.FilterManager
 import com.example.shieldblock.databinding.ActivityRuleEditorBinding
 import com.example.shieldblock.databinding.ItemRuleBinding
+import com.example.shieldblock.databinding.DialogAddRuleBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -96,19 +97,19 @@ class RuleEditorActivity : AppCompatActivity() {
     }
 
     private fun showAddCustomRuleDialog() {
-        val input = EditText(this)
-        input.hint = "*.example.com"
+        val dialogBinding = DialogAddRuleBinding.inflate(layoutInflater)
         AlertDialog.Builder(this)
-            .setTitle(R.string.add_pattern)
-            .setView(input)
-            .setPositiveButton(R.string.block) { _, _ ->
-                val rule = input.text.toString().trim()
+            .setView(dialogBinding.root)
+            .setPositiveButton("Forge") { _, _ ->
+                val rule = dialogBinding.ruleInput.text.toString().trim()
+                val isRegex = dialogBinding.regexToggle.isChecked
                 if (rule.isNotEmpty()) {
-                    filterManager.addCustomRule(rule)
-                    Toast.makeText(this, "Pattern added", Toast.LENGTH_SHORT).show()
+                    val finalRule = if (isRegex) "regex:$rule" else rule
+                    filterManager.addCustomRule(finalRule)
+                    Toast.makeText(this, "Mitigation Pattern forged", Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton(R.string.cancel, null)
+            .setNegativeButton("Abort", null)
             .show()
     }
 

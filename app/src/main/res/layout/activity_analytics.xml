@@ -32,6 +32,37 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Global Intelligence Matrix"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="16dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                app:cardCornerRadius="24dp"
+                app:cardBackgroundColor="#220F1930"
+                app:strokeWidth="1dp"
+                app:strokeColor="#4486FEA7"
+                android:layout_marginBottom="24dp">
+                <com.example.shieldblock.ui.TacticalMapView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="12dp"
+                    android:text="LIVE GLOBAL FEED"
+                    android:textColor="#8886FEA7"
+                    android:textSize="8sp"
+                    android:textStyle="bold" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="Intelligence Radar"
                 android:textColor="@android:color/white"
                 android:textStyle="bold"
@@ -51,6 +82,35 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:padding="20dp" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Intelligence Stream (RAW)"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="16dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                app:cardCornerRadius="20dp"
+                app:cardBackgroundColor="#CC000000"
+                app:strokeWidth="1dp"
+                app:strokeColor="#3386FEA7"
+                android:layout_marginBottom="24dp">
+                <TextView
+                    android:id="@+id/intelligenceTerminalText"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:text="INITIALIZING INTEL STREAM..."
+                    android:textColor="#CC86FEA7"
+                    android:textSize="9sp"
+                    android:fontFamily="monospace"
+                    android:scrollbars="vertical" />
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
