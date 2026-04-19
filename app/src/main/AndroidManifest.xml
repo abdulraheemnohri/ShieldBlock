@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
 
     <application
@@ -86,6 +87,9 @@
         <activity android:name=".NetworkSnifferActivity" android:label="Network Sniffer" />
 
         <activity android:name=".SecurityRecommendationsActivity" android:label="Hardening Tasks" />
+        <activity android:name=".AppDossierActivity" android:label="App Dossier" />
+        <service android:name=".vpn.AegisNodeService" android:exported="false" />
+        <activity android:name=".FirewallActivity" android:exported="false" android:theme="@style/Theme.ShieldBlock" />
     </application>
 
 </manifest>

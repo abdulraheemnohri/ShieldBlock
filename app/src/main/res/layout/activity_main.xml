@@ -10,11 +10,12 @@
         android:layout_height="match_parent" />
 
     <ScrollView
+        android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:scrollbars="none"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
+        app:layout_constraintBottom_toTopOf="@id/tickerCard">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -65,6 +66,19 @@
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginBottom="16dp">
+                <LinearLayout
+                    android:id="@+id/profileSwitcherContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="4dp" />
+            </HorizontalScrollView>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/statusCard"
@@ -147,7 +161,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Core Integrity"
+                android:text="Command Matrix"
                 android:textColor="@android:color/white"
                 android:textStyle="bold"
                 android:textSize="20sp"
@@ -159,7 +173,7 @@
                 android:columnCount="2"
                 android:alignmentMode="alignMargins"
                 android:columnOrderPreserved="false"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="16dp">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
@@ -199,6 +213,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </GridLayout>
+
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
@@ -289,14 +304,14 @@
                             android:id="@+id/recTitleText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Hardening Tasks"
+                            android:text="Optimization Queue"
                             android:textColor="@android:color/white"
                             android:textStyle="bold" />
                         <TextView
                             android:id="@+id/recDescText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Optimizing protocols..."
+                            android:text="Analyzing hardening status..."
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -329,7 +344,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="WiFi • Secure Protocol • 100% Battery"
+                android:text="WiFi • Secure Core • 100% Power"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp"
                 android:layout_marginBottom="24dp" />
@@ -359,6 +374,7 @@
             android:marqueeRepeatLimit="marquee_forever"
             android:scrollHorizontally="true" />
     </com.google.android.material.card.MaterialCardView>
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
@@ -369,4 +385,29 @@
         app:itemTextColor="@color/nav_item_selector"
         app:menu="@menu/bottom_nav_menu" />
 
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/firewallFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="CORE FIREWALL"
+        app:icon="@drawable/ic_security"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:backgroundTint="@color/emerald_accent"
+        android:textColor="@android:color/black"
+        app:iconTint="@android:color/black" />
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/firewallFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="CORE FIREWALL"
+        app:icon="@drawable/ic_security"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:backgroundTint="@color/emerald_accent"
+        android:textColor="@android:color/black"
+        app:iconTint="@android:color/black" />

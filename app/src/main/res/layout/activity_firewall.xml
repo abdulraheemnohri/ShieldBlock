@@ -2,8 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/emerald_dark_bg">
+    android:layout_height="match_parent">
 
     <com.example.shieldblock.ui.AuraBackgroundView
         android:layout_width="match_parent"
@@ -14,59 +13,49 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="#440F1930"
-        app:title="Aegis App Guard"
+        app:title="Core Firewall"
         app:titleTextColor="@android:color/white"
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
-        android:id="@+id/searchLayout"
+        android:id="@+id/ipActionLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp"
+        android:padding="20dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search applications..."
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:hint="Target IP Address"
             app:boxStrokeColor="@color/emerald_accent"
-            app:hintTextColor="@color/emerald_accent">
+            app:hintTextColor="@color/emerald_accent"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/searchAppEditText"
+                android:id="@+id/ipInputEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"
+                android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/systemAppToggle"
-            style="@style/Widget.Material3.Button.TonalButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Show System Apps"
-            android:textSize="12sp"
-            app:cornerRadius="8dp" />
+            android:id="@+id/blockIpBtn"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
+            android:text="MITIGATE IP ADDRESS"
+            app:cornerRadius="12dp" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/appRecyclerView"
+        android:id="@+id/firewallRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/searchLayout"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/ipActionLayout"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
