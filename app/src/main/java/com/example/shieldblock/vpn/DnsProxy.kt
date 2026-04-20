@@ -5,6 +5,8 @@ import android.content.Intent
 import androidx.preference.PreferenceManager
 import com.example.shieldblock.analytics.EventLogger
 import com.example.shieldblock.data.StatsManager
+import com.example.shieldblock.data.ScheduleManager
+import com.example.shieldblock.data.WifiProfileManager
 import java.io.FileOutputStream
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -19,6 +21,10 @@ import java.util.regex.Pattern
 class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val service: MyVpnService) {
     private val eventLogger = EventLogger(service)
     private val statsManager = StatsManager(service)
+    private val appResolver = AppResolver(service)
+    private val scheduleManager = ScheduleManager(service)
+    private val wifiProfileManager = WifiProfileManager(service)
+
     private val blacklist = mutableSetOf<String>()
     private val whitelist = mutableSetOf<String>()
     private val customRules = mutableSetOf<String>()
@@ -59,8 +65,18 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
     fun updateSettings() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(service)
         customDnsServer = prefs.getString("custom_dns", "8.8.8.8") ?: "8.8.8.8"
+
+        // Default settings
         strictMode = prefs.getBoolean("strict_mode", false)
         smartFiltering = prefs.getBoolean("smart_filtering", false)
+
+        // Override with Wi-Fi profile if exists
+        wifiProfileManager.getProfileForCurrentSsid()?.let { profile ->
+            strictMode = profile.strictMode
+            smartFiltering = profile.smartFiltering
+            eventLogger.logEvent("SENTINEL: Applied Wi-Fi specific security profile")
+        }
+
         dataSaver = prefs.getBoolean("data_saver", false)
         blockIpv6 = prefs.getBoolean("block_ipv6", true)
         safeSearch = prefs.getBoolean("safe_search", false)
@@ -90,8 +106,6 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
         }
     }
 
-    fun getTrafficStats(): Pair<Long, Long> = totalBytesRead to totalBytesWritten
-
     fun run() {
         val inputStream = FileInputStream(vpnInterface.fileDescriptor)
         val outputStream = FileOutputStream(vpnInterface.fileDescriptor)
@@ -115,6 +129,8 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
     }
 
     private fun handlePacket(buffer: ByteBuffer, length: Int, socket: DatagramSocket, outputStream: FileOutputStream) {
+        val isActive = scheduleManager.isCurrentlyActive()
+
         buffer.limit(length)
         if (buffer.get(0).toInt() and 0xF0 != 0x45) return
 
@@ -127,22 +143,30 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
         buffer.get(sourceIP)
         buffer.get(destIP)
 
-        val destIpStr = InetAddress.getByAddress(destIP).hostAddress
-        if (isIpBlocked(destIpStr)) {
-            eventLogger.logEvent("Firewall: DROPPED packet to $destIpStr")
-            broadcastEvent(destIpStr, "DROPPED (Core Firewall)")
-            return
-        }
-
-        if (protocol == 1 && stealthMode) { // ICMP
-            return
-        }
-
-        if (protocol != 17) return
-
         val sourcePort = buffer.getShort(ipHeaderSize).toInt() and 0xFFFF
         val destPort = buffer.getShort(ipHeaderSize + 2).toInt() and 0xFFFF
 
+        val sourceApp = appResolver.getAppNameForUid(appResolver.findUidByPort(sourcePort, if (protocol == 17) "UDP" else "TCP"))
+
+        if (!isActive) {
+            if (protocol == 17 && destPort == 53) {
+                 buffer.position(ipHeaderSize + 8)
+                 val dnsData = ByteArray(length - ipHeaderSize - 8)
+                 buffer.get(dnsData)
+                 forwardDns(dnsData, socket, outputStream, sourceIP, sourcePort, destIP)
+            }
+            return
+        }
+
+        val destIpStr = InetAddress.getByAddress(destIP).hostAddress
+        if (isIpBlocked(destIpStr)) {
+            eventLogger.logEvent("Firewall: DROPPED packet from $sourceApp to $destIpStr")
+            broadcastEvent(destIpStr, "DROPPED (Core Firewall)", sourceApp)
+            return
+        }
+
+        if (protocol == 1 && stealthMode) return
+        if (protocol != 17) return
         if (destPort != 53) return
 
         buffer.position(ipHeaderSize + 8)
@@ -156,85 +180,71 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
         if (blockIpv6 && qType == 28) {
             val emptyResponse = createEmptyResponse(dnsData)
             sendResponse(emptyResponse, outputStream, destIP, 53, sourceIP, sourcePort)
-            if (logAllQueries) eventLogger.logEvent("Query: $domain ($qTypeName) -> BLOCKED (IPv6 Leak Protection)")
             return
         }
 
         if (isWhitelisted(domain)) {
             statsManager.incrementSafeQueries()
-            broadcastEvent(domain, "Authorized (Whitelisted)")
-            val latency = forwardDns(dnsData, socket, outputStream, sourceIP, sourcePort, destIP)
-            if (logAllQueries) {
-                val path = if (dnsOverHttps) "SECURE (DoH)" else customDnsServer
-                eventLogger.logEvent("Query: $domain ($qTypeName) -> AUTHORIZED via $path [${latency}ms]")
-            }
+            broadcastEvent(domain, "Authorized (Whitelisted)", sourceApp)
+            forwardDns(dnsData, socket, outputStream, sourceIP, sourcePort, destIP)
             return
         }
 
         if (strictMode) {
-            blockDomain(domain, dnsData, outputStream, destIP, sourceIP, sourcePort, "Strict Protocol")
+            blockDomain(domain, dnsData, outputStream, destIP, sourceIP, sourcePort, "Strict Protocol", sourceApp)
             return
         }
 
         if (safeSearch && isSearchDomain(domain)) {
-            broadcastEvent(domain, "Enforcing SafeSearch")
+            broadcastEvent(domain, "Enforcing SafeSearch", sourceApp)
             val safeResponse = createARecordResponse(dnsData, GOOGLE_SAFE_IPS.first())
             sendResponse(safeResponse, outputStream, destIP, 53, sourceIP, sourcePort)
-            if (logAllQueries) eventLogger.logEvent("Query: $domain ($qTypeName) -> REDIRECT (Aegis SafeSearch)")
             return
         }
 
         val reason = getBlockedReason(domain)
         if (reason != null) {
-            blockDomain(domain, dnsData, outputStream, destIP, sourceIP, sourcePort, reason)
+            blockDomain(domain, dnsData, outputStream, destIP, sourceIP, sourcePort, reason, sourceApp)
         } else {
             statsManager.incrementSafeQueries()
-            broadcastEvent(domain, "Authorized ($qTypeName)")
-            val latency = forwardDns(dnsData, socket, outputStream, sourceIP, sourcePort, destIP)
-            if (logAllQueries) {
-                val path = if (dnsOverHttps) "SECURE (DoH)" else customDnsServer
-                eventLogger.logEvent("Query: $domain ($qTypeName) -> AUTHORIZED via $path [${latency}ms]")
-            }
+            broadcastEvent(domain, "Authorized ($qTypeName)", sourceApp)
+            forwardDns(dnsData, socket, outputStream, sourceIP, sourcePort, destIP)
         }
     }
 
     private fun isIpBlocked(ip: String): Boolean {
-        synchronized(blockedIps) {
-            return blockedIps.contains(ip)
-        }
+        synchronized(blockedIps) { return blockedIps.contains(ip) }
     }
 
     private fun getBlockedReason(domain: String): String? {
         if (isBlacklisted(domain)) return "Threat DB Match"
         if (matchesCustomRules(domain)) return "Custom Pattern"
-
         if (smartFiltering) {
             val suspicious = listOf("tracker", "telemetry", "analytics", "metrics", "log-", "stats", "ads.", "doubleclick", "adservice")
             if (suspicious.any { domain.contains(it, ignoreCase = true) }) return "Heuristic Anomaly"
         }
-
         if (dataSaver) {
             val heavy = listOf("tiktok.com", "instagram.com", "fbcdn.net", "googlevideo.com")
             if (heavy.any { domain.contains(it, ignoreCase = true) }) return "Bandwidth Throttle"
         }
-
         return null
     }
 
-    private fun broadcastEvent(domain: String, action: String) {
+    private fun broadcastEvent(domain: String, action: String, appName: String) {
         service.sendBroadcast(Intent("com.example.shieldblock.PACKET_EVENT").apply {
             putExtra("domain", domain)
             putExtra("action", action)
+            putExtra("appName", appName)
             putExtra("protocol", "UDP")
             putExtra("port", 53)
         })
     }
 
-    private fun blockDomain(domain: String, dnsData: ByteArray, outputStream: FileOutputStream, destIP: ByteArray, sourceIP: ByteArray, sourcePort: Int, reason: String) {
+    private fun blockDomain(domain: String, dnsData: ByteArray, outputStream: FileOutputStream, destIP: ByteArray, sourceIP: ByteArray, sourcePort: Int, reason: String, appName: String) {
         statsManager.incrementBlockedAds()
-        statsManager.logBlockedDomain(domain)
-        eventLogger.logEvent("Blocked: $domain ($reason)")
-        broadcastEvent(domain, "MITIGATED: $reason")
+        statsManager.logBlockedDomain(domain, appName)
+        eventLogger.logEvent("Blocked: $domain ($reason) from $appName")
+        broadcastEvent(domain, "MITIGATED: $reason", appName)
         val nxResponse = createNxDomainResponse(dnsData)
         sendResponse(nxResponse, outputStream, destIP, 53, sourceIP, sourcePort)
     }
@@ -265,38 +275,25 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
             val responseData = inPacket.data.copyOf(inPacket.length)
             sendResponse(responseData, outputStream, origDest, 53, origSource, origSourcePort)
             return latency
-        } catch (e: Exception) {
-            return -1
-        }
+        } catch (e: Exception) { return -1 }
     }
 
-    private fun sendResponse(
-        dnsResponse: ByteArray,
-        outputStream: FileOutputStream,
-        srcIp: ByteArray,
-        srcPort: Int,
-        dstIp: ByteArray,
-        dstPort: Int
-    ) {
+    private fun sendResponse(dnsResponse: ByteArray, outputStream: FileOutputStream, srcIp: ByteArray, srcPort: Int, dstIp: ByteArray, dstPort: Int) {
         val totalLen = 20 + 8 + dnsResponse.size
         val packet = ByteBuffer.allocate(totalLen)
         packet.order(ByteOrder.BIG_ENDIAN)
-
         packet.put(0, 0x45.toByte())
         packet.putShort(2, totalLen.toShort())
         packet.put(9, 17.toByte())
         packet.position(12)
         packet.put(srcIp)
         packet.put(dstIp)
-
         packet.position(20)
         packet.putShort(srcPort.toShort())
         packet.putShort(dstPort.toShort())
         packet.putShort(24, (8 + dnsResponse.size).toShort())
-
         packet.position(28)
         packet.put(dnsResponse)
-
         val data = packet.array()
         try {
             outputStream.write(data)
@@ -304,18 +301,8 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
         } catch (e: Exception) {}
     }
 
-    private fun isWhitelisted(domain: String): Boolean {
-        synchronized(whitelist) {
-            return whitelist.any { domain == it || domain.endsWith(".$it") }
-        }
-    }
-
-    private fun isBlacklisted(domain: String): Boolean {
-        synchronized(blacklist) {
-            return blacklist.contains(domain) || blacklist.any { domain.endsWith(".$it") }
-        }
-    }
-
+    private fun isWhitelisted(domain: String): Boolean { synchronized(whitelist) { return whitelist.any { domain == it || domain.endsWith(".$it") } } }
+    private fun isBlacklisted(domain: String): Boolean { synchronized(blacklist) { return blacklist.contains(domain) || blacklist.any { domain.endsWith(".$it") } } }
     private fun matchesCustomRules(domain: String): Boolean {
         synchronized(customRules) {
             if (customRules.any { domain.contains(it, ignoreCase = true) }) return true
@@ -323,7 +310,6 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
             return false
         }
     }
-
     private fun parseDomainName(data: ByteArray): String? {
         if (data.size < 13) return null
         val sb = StringBuilder()
@@ -337,39 +323,21 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
                 sb.append(String(data, pos + 1, len))
                 pos += len + 1
             }
-        } catch (e: Exception) {
-            return null
-        }
+        } catch (e: Exception) { return null }
         return sb.toString()
     }
-
-    private fun getQueryTypeName(type: Int): String = when(type) {
-        1 -> "A"
-        28 -> "AAAA"
-        5 -> "CNAME"
-        15 -> "MX"
-        16 -> "TXT"
-        else -> "TYPE_$type"
-    }
-
+    private fun getQueryTypeName(type: Int): String = when(type) { 1 -> "A"; 28 -> "AAAA"; 5 -> "CNAME"; 15 -> "MX"; 16 -> "TXT"; else -> "TYPE_$type" }
     private fun getQueryType(data: ByteArray): Int {
         var pos = 12
         try {
             while (pos < data.size) {
                 val len = data[pos].toInt() and 0xFF
-                if (len == 0) {
-                    pos++
-                    if (pos + 1 < data.size) {
-                        return ((data[pos].toInt() and 0xFF) shl 8) or (data[pos + 1].toInt() and 0xFF)
-                    }
-                    break
-                }
+                if (len == 0) { pos++; if (pos + 1 < data.size) return ((data[pos].toInt() and 0xFF) shl 8) or (data[pos + 1].toInt() and 0xFF); break }
                 pos += len + 1
             }
         } catch (e: Exception) {}
         return 1
     }
-
     private fun createNxDomainResponse(query: ByteArray): ByteArray {
         val response = query.copyOf()
         if (response.size < 4) return response
@@ -377,7 +345,6 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
         response[3] = (response[3].toInt() or 0x83).toByte()
         return response
     }
-
     private fun createEmptyResponse(query: ByteArray): ByteArray {
         val response = query.copyOf()
         if (response.size < 4) return response
@@ -385,13 +352,10 @@ class DnsProxy(private val vpnInterface: ParcelFileDescriptor, private val servi
         response[3] = (response[3].toInt() or 0x80).toByte()
         return response
     }
-
     private fun createARecordResponse(query: ByteArray, ip: String): ByteArray {
         val response = query.copyOf().toMutableList()
         if (response.size < 12) return query
-        response[2] = 0x81.toByte()
-        response[3] = 0x80.toByte()
-        response[7] = 0x01.toByte()
+        response[2] = 0x81.toByte(); response[3] = 0x80.toByte(); response[7] = 0x01.toByte()
         response.add(0xc0.toByte()); response.add(0x0c.toByte())
         response.add(0x00.toByte()); response.add(0x01.toByte())
         response.add(0x00.toByte()); response.add(0x01.toByte())
