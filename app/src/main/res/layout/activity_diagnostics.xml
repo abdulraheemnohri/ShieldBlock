@@ -11,22 +11,22 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:title="Security Auditor"
+        app:title="System Diagnostics"
         app:titleTextColor="@android:color/white"
         app:layout_constraintTop_toTopOf="parent" />
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/systemToggleBtn"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="12dp"
-        android:text="Audit System Apps"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:id="@+id/runDiagnosticsBtn"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_margin="20dp"
+        android:text="INITIATE SYSTEM SCAN"
+        app:cornerRadius="12dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar" />
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/riskRecyclerView"
+        android:id="@+id/diagRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/systemToggleBtn"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/runDiagnosticsBtn"
         app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

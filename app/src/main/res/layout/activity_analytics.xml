@@ -2,230 +2,118 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:background="@color/emerald_dark_bg">
     <com.example.shieldblock.ui.AuraBackgroundView
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="#440F1930"
-        app:title="Aegis Intel"
+        app:title="Threat Intelligence"
         app:titleTextColor="@android:color/white"
         app:layout_constraintTop_toTopOf="parent" />
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Global Intelligence Matrix"
-                android:textColor="@android:color/white"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_marginBottom="16dp" />
-
+            android:padding="16dp">
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/neuralIntelCard"
                 android:layout_width="match_parent"
-                android:layout_height="180dp"
-                app:cardCornerRadius="24dp"
-                app:cardBackgroundColor="#220F1930"
-                app:strokeWidth="1dp"
-                app:strokeColor="#4486FEA7"
-                android:layout_marginBottom="24dp">
-                <com.example.shieldblock.ui.TacticalMapView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_margin="12dp"
-                    android:text="LIVE GLOBAL FEED"
-                    android:textColor="#8886FEA7"
-                    android:textSize="8sp"
-                    android:textStyle="bold" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Intelligence Radar"
-                android:textColor="@android:color/white"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_marginBottom="16dp" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="220dp"
-                app:cardCornerRadius="24dp"
-                app:cardBackgroundColor="#220F1930"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="#2286FEA7"
+                app:cardCornerRadius="16dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#4486FEA7"
-                android:layout_marginBottom="24dp">
-                <com.example.shieldblock.ui.ThreatRadarView
-                    android:id="@+id/threatRadar"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="20dp" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Intelligence Stream (RAW)"
-                android:textColor="@android:color/white"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_marginBottom="16dp" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                app:cardCornerRadius="20dp"
-                app:cardBackgroundColor="#CC000000"
-                app:strokeWidth="1dp"
-                app:strokeColor="#3386FEA7"
-                android:layout_marginBottom="24dp">
-                <TextView
-                    android:id="@+id/intelligenceTerminalText"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="12dp"
-                    android:text="INITIALIZING INTEL STREAM..."
-                    android:textColor="#CC86FEA7"
-                    android:textSize="9sp"
-                    android:fontFamily="monospace"
-                    android:scrollbars="vertical" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mitigation Trend"
-                android:textColor="@android:color/white"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_marginBottom="16dp" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="180dp"
-                app:cardCornerRadius="24dp"
-                app:cardBackgroundColor="#220F1930"
-                app:strokeWidth="1dp"
-                app:strokeColor="#22FFFFFF"
-                android:layout_marginBottom="24dp">
+                app:strokeColor="@color/emerald_accent">
                 <LinearLayout
-                    android:id="@+id/chartContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:padding="20dp"
-                    android:gravity="bottom" />
+                    android:gravity="center_vertical">
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_security"
+                        app:tint="@color/emerald_accent" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="NEURAL ANALYTICS"
+                            android:textColor="@color/emerald_accent"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="HEURISTIC THREAT PREDICTION"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <GridLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:columnCount="2"
-                android:alignmentMode="alignMargins"
-                android:columnOrderPreserved="false"
-                android:layout_marginBottom="24dp">
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="4dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardBackgroundColor="#220F1930">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-                        <TextView android:id="@+id/totalQueriesText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 Requests" android:textColor="@android:color/white" android:textSize="16sp" android:textStyle="bold" />
-                        <TextView android:id="@+id/blockPercentageText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0% Mitigated" android:textColor="@color/emerald_accent" android:textSize="11sp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="4dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardBackgroundColor="#220F1930">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-                        <TextView android:id="@+id/throughputText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 KB/s" android:textColor="@android:color/white" android:textSize="16sp" android:textStyle="bold" />
-                        <TextView android:id="@+id/batteryUsageText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Efficient Path" android:textColor="@color/text_secondary" android:textSize="11sp" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-            </GridLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Intrusion Points"
-                android:textColor="@android:color/white"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_marginBottom="16dp" />
-
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/trafficMonitorCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardBackgroundColor="#220F1930"
+                android:layout_marginTop="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardBackgroundColor="#1186FEA7"
+                app:cardCornerRadius="16dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#11FFFFFF"
-                android:layout_marginBottom="24dp">
+                app:strokeColor="@color/emerald_accent">
                 <LinearLayout
-                    android:id="@+id/topAppsContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp" />
+                    android:orientation="horizontal"
+                    android:padding="20dp"
+                    android:gravity="center_vertical">
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_security"
+                        app:tint="@color/emerald_accent" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="LIVE TRAFFIC MONITOR"
+                            android:textColor="@color/emerald_accent"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="REAL-TIME APP SOURCE TRACKING"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/openSecurityAuditBtn"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Execute Deep Audit"
-                app:cornerRadius="12dp"
-                app:backgroundTint="@color/emerald_accent"
-                android:layout_marginBottom="12dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/openSnifferBtn"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Live Packet Sniffer" />
-
         </LinearLayout>
     </ScrollView>
-
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
@@ -235,5 +123,4 @@
         app:itemIconTint="@color/nav_item_selector"
         app:itemTextColor="@color/nav_item_selector"
         app:menu="@menu/bottom_nav_menu" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

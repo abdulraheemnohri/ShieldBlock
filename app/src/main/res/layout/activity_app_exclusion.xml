@@ -4,11 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/emerald_dark_bg">
-
     <com.example.shieldblock.ui.AuraBackgroundView
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -17,7 +15,6 @@
         app:title="Aegis App Guard"
         app:titleTextColor="@android:color/white"
         app:layout_constraintTop_toTopOf="parent" />
-
     <LinearLayout
         android:id="@+id/searchLayout"
         android:layout_width="match_parent"
@@ -25,7 +22,6 @@
         android:orientation="vertical"
         android:padding="12dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
-
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -39,7 +35,6 @@
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/white" />
         </com.google.android.material.textfield.TextInputLayout>
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/systemAppToggle"
             style="@style/Widget.Material3.Button.TonalButton"
@@ -50,14 +45,12 @@
             android:textSize="12sp"
             app:cornerRadius="8dp" />
     </LinearLayout>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/appRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@id/searchLayout"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigation" />
-
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -67,7 +60,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
@@ -77,5 +69,4 @@
         app:itemIconTint="@color/nav_item_selector"
         app:itemTextColor="@color/nav_item_selector"
         app:menu="@menu/bottom_nav_menu" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

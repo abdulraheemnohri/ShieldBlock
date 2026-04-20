@@ -2,107 +2,68 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:background="@color/emerald_dark_bg">
     <com.example.shieldblock.ui.AuraBackgroundView
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="#440F1930"
-        app:title="App Dossier"
+        app:title="App Intelligence Dossier"
         app:titleTextColor="@android:color/white"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ScrollView
+    <LinearLayout
+        android:id="@+id/appHeader"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
-
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="24dp"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+        <ImageView
+            android:id="@+id/appIcon"
+            android:layout_width="64dp"
+            android:layout_height="64dp" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
-                app:cardBackgroundColor="#220F1930"
-                app:strokeWidth="1dp"
-                app:strokeColor="@color/emerald_accent"
-                android:layout_marginBottom="24dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="32dp"
-                    android:gravity="center">
-
-                    <TextView
-                        android:id="@+id/blockCountText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="@color/emerald_accent"
-                        android:textSize="56sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ANOMALIES MITIGATED"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
+            android:layout_marginStart="20dp"
+            android:orientation="vertical">
             <TextView
+                android:id="@+id/appName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Intelligence Profile"
                 android:textColor="@android:color/white"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:layout_marginBottom="16dp" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/packageName"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardBackgroundColor="#220F1930"
-                android:layout_marginBottom="24dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <TextView android:id="@+id/threatLevelText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="LEVEL: MINIMAL" android:textStyle="bold" android:layout_marginBottom="8dp"/>
-                    <TextView android:id="@+id/packageText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="com.example.app" android:textColor="@color/text_secondary" android:textSize="11sp" android:fontFamily="monospace" android:layout_marginBottom="8dp"/>
-                    <TextView android:id="@+id/lastActivityText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="LAST MITIGATION: 0" android:textColor="@android:color/white" android:textSize="11sp" android:fontFamily="monospace" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
         </LinearLayout>
-    </ScrollView>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
-        android:layout_width="match_parent"
+    </LinearLayout>
+    <TextView
+        android:id="@+id/telemetryLabel"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/emerald_card_bg"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:itemIconTint="@color/nav_item_selector"
-        app:itemTextColor="@color/nav_item_selector"
-        app:menu="@menu/bottom_nav_menu" />
-
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:text="RECENT MITIGATION TELEMETRY"
+        android:textColor="@color/emerald_accent"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/appHeader"
+        app:layout_constraintStart_toStartOf="parent" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/telemetryRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/telemetryLabel"
+        app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

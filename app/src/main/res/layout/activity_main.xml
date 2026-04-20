@@ -2,379 +2,88 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:background="@color/emerald_dark_bg">
     <com.example.shieldblock.ui.AuraBackgroundView
         android:id="@+id/auraBackground"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
     <ScrollView
-        android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:scrollbars="none"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/tickerCard">
-
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp">
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="#44000000"
-                android:layout_marginBottom="16dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="12dp"
-                    android:gravity="center_vertical">
-                    <TextView
-                        android:id="@+id/hudProtocolText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="UDP/53"
-                        android:textColor="@color/emerald_accent"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        android:background="#2286FEA7"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="2dp" />
-                    <View android:layout_width="1dp" android:layout_height="12dp" android:background="#44FFFFFF" android:layout_marginHorizontal="10dp" />
-                    <TextView
-                        android:id="@+id/hudStatusText"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="AEGIS RUNTIME: 0h 0m"
-                        android:textColor="#88FFFFFF"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-                    <TextView
-                        android:id="@+id/hudLatencyText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="LATENCY: --ms"
-                        android:textColor="@color/emerald_accent"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:scrollbars="none"
-                android:layout_marginBottom="16dp">
-                <LinearLayout
-                    android:id="@+id/profileSwitcherContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="4dp" />
-            </HorizontalScrollView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/statusCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="32dp"
-                app:cardBackgroundColor="#220F1930"
-                app:strokeWidth="1.5dp"
-                app:strokeColor="#4486FEA7"
-                android:layout_marginBottom="24dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="32dp"
-                    android:gravity="center">
-
-                    <FrameLayout
-                        android:layout_width="140dp"
-                        android:layout_height="140dp">
-
-                        <com.example.shieldblock.ui.AegisCoreView
-                            android:id="@+id/aegisCore"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
-
-                        <ImageView
-                            android:id="@+id/statusIcon"
-                            android:layout_width="70dp"
-                            android:layout_height="70dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_launcher_foreground" />
-                    </FrameLayout>
-
-                    <TextView
-                        android:id="@+id/statusText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/protected_status"
-                        android:textColor="@color/emerald_accent"
-                        android:textSize="28sp"
-                        android:textStyle="bold"
-                        android:layout_marginTop="16dp" />
-
-                    <TextView
-                        android:id="@+id/statusSubText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/status_filtering_active"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginTop="4dp" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="32dp">
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/startVpnButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/activate"
-                            app:cornerRadius="16dp"
-                            app:backgroundTint="@color/emerald_accent"
-                            android:paddingHorizontal="24dp" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/stopVpnButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/deactivate"
-                            style="@style/Widget.Material3.Button.TonalButton"
-                            android:visibility="gone" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Command Matrix"
-                android:textColor="@android:color/white"
+                android:text="AEGIS ULTRA PLUS"
+                android:textColor="@color/emerald_accent"
+                android:textSize="24sp"
                 android:textStyle="bold"
-                android:textSize="20sp"
-                android:layout_marginBottom="16dp" />
-
-            <GridLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:columnCount="2"
-                android:alignmentMode="alignMargins"
-                android:columnOrderPreserved="false"
-                android:layout_marginBottom="16dp">
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="6dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardBackgroundColor="#220F1930"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#22FFFFFF">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Stopped" android:textColor="@color/text_secondary" android:textSize="12sp" />
-                        <TextView android:id="@+id/blockedAdsCountText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="@android:color/white" android:textSize="22sp" android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="6dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardBackgroundColor="#220F1930"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#22FFFFFF">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Optimized" android:textColor="@color/text_secondary" android:textSize="12sp" />
-                        <TextView android:id="@+id/dataSavedText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.0 MB" android:textColor="@android:color/white" android:textSize="22sp" android:textStyle="bold" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-            </GridLayout>
-
+                android:letterSpacing="0.2" />
+            <com.example.shieldblock.ui.AegisCoreView
+                android:id="@+id/aegisCore"
+                android:layout_width="280dp"
+                android:layout_height="280dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="32dp" />
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
-                app:cardCornerRadius="20dp"
-                app:cardBackgroundColor="#11000000"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                app:cardBackgroundColor="@color/emerald_card_bg"
+                app:cardCornerRadius="16dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#11FFFFFF"
-                android:layout_marginBottom="24dp">
+                app:strokeColor="#3386FEA7">
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="12dp">
+                    android:padding="16dp">
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:id="@+id/statusHud"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="THROUGHPUT OSCILLOSCOPE"
-                        android:textColor="#88FFFFFF"
-                        android:textSize="8sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="8dp" />
-                    <com.example.shieldblock.ui.CoreOscilloscopeView
-                        android:id="@+id/throughputOscilloscope"
+                        android:text="PROTOCOL: READY\nSENTINEL: SCANNING"
+                        android:textColor="@android:color/white"
+                        android:fontFamily="monospace"
+                        android:textSize="12sp" />
+                    <com.example.shieldblock.ui.ThroughputOscilloscope
+                        android:id="@+id/oscilloscope"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+                        android:layout_height="60dp"
+                        android:layout_marginTop="12dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/scoreCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardBackgroundColor="#220F1930"
-                app:strokeWidth="1dp"
-                app:strokeColor="#22FFFFFF"
-                android:layout_marginBottom="24dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                        <TextView android:id="@+id/privacyScoreText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Aegis Level: 100" android:textColor="@android:color/white" android:textStyle="bold" />
-                        <TextView android:id="@+id/privacyGradeText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentRight="true" android:text="MAX" android:textColor="@color/emerald_accent" android:textStyle="bold" />
-                    </RelativeLayout>
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/privacyProgressBar"
-                        android:layout_width="match_parent"
-                        android:layout_height="6dp"
-                        android:layout_marginTop="16dp"
-                        android:progress="100"
-                        app:trackColor="#11FFFFFF"
-                        app:indicatorColor="@color/emerald_accent"
-                        app:trackCornerRadius="3dp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/recommendationsCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardBackgroundColor="#220F1930"
-                app:strokeColor="#3386FEA7"
-                app:strokeWidth="1dp"
-                android:layout_marginBottom="24dp">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="20dp"
-                    android:gravity="center_vertical">
-                    <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:src="@android:drawable/ic_dialog_info"
-                        app:tint="@color/emerald_accent" />
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="16dp"
-                        android:orientation="vertical">
-                        <TextView
-                            android:id="@+id/recTitleText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Optimization Queue"
-                            android:textColor="@android:color/white"
-                            android:textStyle="bold" />
-                        <TextView
-                            android:id="@+id/recDescText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Analyzing hardening status..."
-                            android:textColor="@color/text_secondary"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@android:drawable/ic_media_play"
-                        app:tint="@color/emerald_accent" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardBackgroundColor="#220F1930"
-                app:strokeWidth="1dp"
-                app:strokeColor="#11FFFFFF"
-                android:layout_marginBottom="24dp">
-                <LinearLayout
-                    android:id="@+id/recentBlocksContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp" />
-            </com.google.android.material.card.MaterialCardView>
-
             <TextView
-                android:id="@+id/networkInfoText"
+                android:id="@+id/threatTicker"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="WiFi • Secure Core • 100% Power"
+                android:layout_marginTop="16dp"
+                android:text="SENTINEL ACTIVE: MONITORING STREAMS..."
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp"
-                android:layout_marginBottom="24dp" />
-
+                android:textSize="10sp"
+                android:singleLine="true"
+                android:ellipsize="marquee" />
         </LinearLayout>
     </ScrollView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/tickerCard"
-        android:layout_width="match_parent"
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/firewallFab"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="#CC000000"
-        app:cardCornerRadius="0dp"
-        app:strokeWidth="0dp"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation">
-        <TextView
-            android:id="@+id/telemetryTickerText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:text="CORE READY • INITIALIZING AEGIS PROTOCOLS..."
-            android:textColor="@color/emerald_accent"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            android:singleLine="true"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:scrollHorizontally="true" />
-    </com.google.android.material.card.MaterialCardView>
-
+        android:layout_margin="24dp"
+        android:text="FIREWALL"
+        app:icon="@drawable/ic_security"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:backgroundTint="@color/emerald_accent"
+        android:textColor="@android:color/black"
+        app:iconTint="@android:color/black" />
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
@@ -384,30 +93,4 @@
         app:itemIconTint="@color/nav_item_selector"
         app:itemTextColor="@color/nav_item_selector"
         app:menu="@menu/bottom_nav_menu" />
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/firewallFab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="CORE FIREWALL"
-        app:icon="@drawable/ic_security"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:backgroundTint="@color/emerald_accent"
-        android:textColor="@android:color/black"
-        app:iconTint="@android:color/black" />
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/firewallFab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="CORE FIREWALL"
-        app:icon="@drawable/ic_security"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:backgroundTint="@color/emerald_accent"
-        android:textColor="@android:color/black"
-        app:iconTint="@android:color/black" />
