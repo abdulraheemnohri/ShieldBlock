@@ -1,33 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="emerald_accent">#86fea7</color>
-    <color name="emerald_dark_bg">#060e20</color>
-    <color name="emerald_card_bg">#0f1930</color>
-    <color name="text_secondary">#a3aac4</color>
-
-    <color name="primary">#86fea7</color>
-    <color name="on_primary">#000000</color>
-    <color name="primary_container">#3bb668</color>
-    <color name="on_primary_container">#002910</color>
-
-    <color name="secondary">#d3ddf2</color>
-    <color name="on_secondary">#000000</color>
-    <color name="secondary_container">#3d4757</color>
-
-    <color name="tertiary">#ff716a</color>
-    <color name="on_tertiary">#000000</color>
-    <color name="tertiary_container">#fd4e4d</color>
-
-    <color name="background">#060e20</color>
-    <color name="surface">#060e20</color>
-    <color name="on_surface">#dee5ff</color>
-    <color name="surface_variant">#192540</color>
-    <color name="on_surface_variant">#a3aac4</color>
-    <color name="surface_container">#0f1930</color>
-    <color name="surface_container_low">#091328</color>
-    <color name="surface_container_high">#141f38</color>
-    <color name="outline">#6d758c</color>
-    <color name="outline_variant">#40485d</color>
-    <color name="nav_item_selector">#86fea7</color>
-    <color name="green">#86fea7</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
 </resources>
