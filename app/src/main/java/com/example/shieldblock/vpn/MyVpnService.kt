@@ -1,81 +1,222 @@
 package com.example.shieldblock.vpn
 
-import android.content.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.net.VpnService
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.ParcelFileDescriptor
-import android.util.Log
+import androidx.core.app.NotificationCompat
+import androidx.preference.PreferenceManager
+import androidx.work.*
 import com.example.shieldblock.MainActivity
 import com.example.shieldblock.R
-import com.example.shieldblock.analytics.EventLogger
+import com.example.shieldblock.BlacklistWorker
+import com.example.shieldblock.ShieldBlockWidget
+import com.example.shieldblock.data.BlacklistManager
+import com.example.shieldblock.data.WhitelistManager
+import com.example.shieldblock.data.FilterManager
+import kotlinx.coroutines.*
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class MyVpnService : VpnService() {
     private var vpnInterface: ParcelFileDescriptor? = null
+    private var dnsProxyJob: Job? = null
+    private var widgetUpdateJob: Job? = null
+    private lateinit var blacklistManager: BlacklistManager
+    private lateinit var whitelistManager: WhitelistManager
+    private lateinit var filterManager: FilterManager
     private var dnsProxy: DnsProxy? = null
-    private var proxyThread: Thread? = null
-    private val eventLogger by lazy { EventLogger(this) }
 
-    private val wifiReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == WifiManager.NETWORK_STATE_CHANGED_ACTION) {
-                dnsProxy?.updateSettings()
+    companion object {
+        const val CHANNEL_ID = "ShieldBlockVPNChannel"
+        const val NOTIFICATION_ID = 1
+        var instance: MyVpnService? = null
+        const val FAKE_DNS_IP = "10.0.0.1"
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        instance = this
+        blacklistManager = BlacklistManager(this)
+        whitelistManager = WhitelistManager(this)
+        filterManager = FilterManager(this)
+        createNotificationChannel()
+        scheduleAutoUpdates()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.getStringExtra("action")) {
+            "start" -> {
+                if (shouldExcludeCurrentNetwork() || !isWithinSchedule()) {
+                    stopVpn()
+                } else {
+                    startVpn()
+                }
+            }
+            "stop" -> stopVpn()
+            "reload" -> reloadRules()
+        }
+        return START_STICKY
+    }
+
+    fun getTrafficStats(): Pair<Long, Long> = dnsProxy?.getTrafficStats() ?: (0L to 0L)
+
+    private fun scheduleAutoUpdates() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val hours = prefs.getInt("update_frequency", 24).toLong()
+        val workRequest = PeriodicWorkRequestBuilder<BlacklistWorker>(hours, TimeUnit.HOURS)
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("blacklist_update", ExistingPeriodicWorkPolicy.KEEP, workRequest)
+    }
+
+    private fun isWithinSchedule(): Boolean {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        if (!prefs.getBoolean("scheduled_enabled", false)) return true
+
+        val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+        val nowStr = sdf.format(Date())
+        val start = prefs.getString("scheduled_start", "00:00") ?: "00:00"
+        val end = prefs.getString("scheduled_end", "23:59") ?: "23:59"
+
+        return if (start <= end) {
+            nowStr in start..end
+        } else {
+            nowStr >= start || nowStr <= end
+        }
+    }
+
+    private fun shouldExcludeCurrentNetwork(): Boolean {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val excludedSsids = prefs.getStringSet("excluded_wifi_ssids", emptySet()) ?: emptySet()
+        if (excludedSsids.isEmpty()) return false
+
+        val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val info = try { wm.connectionInfo } catch(e: Exception) { null }
+        val ssid = info?.ssid?.replace("\"", "") ?: ""
+        return excludedSsids.contains(ssid)
+    }
+
+    private fun startVpn() {
+        if (vpnInterface != null) {
+            reloadRules()
+            return
+        }
+
+        setupVpn()
+        if (vpnInterface == null) return
+
+        val proxy = DnsProxy(vpnInterface!!, this)
+        dnsProxy = proxy
+        proxy.updateBlacklist(blacklistManager.loadLocalBlacklist())
+        proxy.updateWhitelist(whitelistManager.getWhitelist())
+        proxy.updateSettings()
+
+        dnsProxyJob = CoroutineScope(Dispatchers.IO).launch {
+            proxy.run()
+        }
+
+        startWidgetMonitor()
+
+        startForeground(NOTIFICATION_ID, createNotification())
+        sendBroadcast(Intent("com.example.shieldblock.VPN_STATUS_CHANGED").apply { putExtra("status", true) })
+        sendBroadcast(Intent(this, ShieldBlockWidget::class.java).apply { action = "com.example.shieldblock.VPN_STATUS_CHANGED" })
+    }
+
+    private fun startWidgetMonitor() {
+        widgetUpdateJob?.cancel()
+        widgetUpdateJob = CoroutineScope(Dispatchers.Main).launch {
+            while (isActive) {
+                sendBroadcast(Intent(this@MyVpnService, ShieldBlockWidget::class.java).apply { action = "com.example.shieldblock.VPN_STATUS_CHANGED" })
+                delay(5000)
             }
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == "STOP") {
-            stopVpn()
-            return START_NOT_STICKY
+    private fun reloadRules() {
+        dnsProxy?.let {
+            it.updateBlacklist(blacklistManager.loadLocalBlacklist())
+            it.updateWhitelist(whitelistManager.getWhitelist())
+            it.updateSettings()
         }
-        startVpn()
-        return START_STICKY
     }
 
-    private fun startVpn() {
-        if (vpnInterface != null) return
-
+    private fun setupVpn() {
         val builder = Builder()
-            .setSession("Aegis Ultra Plus")
-            .addAddress("10.0.0.2", 24)
-            .addDnsServer("10.0.0.2")
-            .addRoute("0.0.0.0", 0)
-            .setBlocking(true)
-            .setConfigureIntent(android.app.PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), android.app.PendingIntent.FLAG_IMMUTABLE))
+        builder.setSession("ShieldBlockVPN")
+        builder.addAddress("10.0.0.2", 32)
+        builder.addDnsServer(FAKE_DNS_IP)
+        builder.addRoute(FAKE_DNS_IP, 32)
 
-        val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val excludedApps = prefs.getStringSet("excluded_apps", emptySet()) ?: emptySet()
-        excludedApps.forEach { packageName ->
+        excludedApps.forEach {
             try {
-                builder.addDisallowedApplication(packageName)
-            } catch (e: Exception) {}
+                builder.addDisallowedApplication(it)
+            } catch (e: Exception) {
+            }
         }
 
         vpnInterface = builder.establish()
+    }
 
-        vpnInterface?.let {
-            dnsProxy = DnsProxy(it, this)
-            dnsProxy?.updateSettings()
-            proxyThread = Thread(dnsProxy, "AegisProxyThread")
-            proxyThread?.start()
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val serviceChannel = NotificationChannel(
+                CHANNEL_ID,
+                "ShieldBlock VPN Service",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(serviceChannel)
         }
+    }
 
-        registerReceiver(wifiReceiver, IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION))
-        eventLogger.logEvent("Aegis Node: Service Online")
+    private fun createNotification(): Notification {
+        val stopIntent = Intent(this, MyVpnService::class.java).apply { putExtra("action", "stop") }
+        val stopPendingIntent = PendingIntent.getService(this, 1, stopIntent, PendingIntent.FLAG_IMMUTABLE)
+
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, notificationIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("ShieldBlock Ultra active")
+            .setContentText("Privacy protection is enabled.")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .setContentIntent(pendingIntent)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Deactivate", stopPendingIntent)
+            .build()
     }
 
     private fun stopVpn() {
-        try { unregisterReceiver(wifiReceiver) } catch (e: Exception) {}
-        proxyThread?.interrupt()
-        vpnInterface?.close()
+        dnsProxyJob?.cancel()
+        widgetUpdateJob?.cancel()
+        try {
+            vpnInterface?.close()
+        } catch (e: Exception) {}
         vpnInterface = null
         dnsProxy = null
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        sendBroadcast(Intent("com.example.shieldblock.VPN_STATUS_CHANGED").apply { putExtra("status", false) })
+        sendBroadcast(Intent(this, ShieldBlockWidget::class.java).apply { action = "com.example.shieldblock.VPN_STATUS_CHANGED" })
         stopSelf()
-        eventLogger.logEvent("Aegis Node: Service Offline")
     }
 
     override fun onDestroy() {
         stopVpn()
+        instance = null
         super.onDestroy()
     }
 }
